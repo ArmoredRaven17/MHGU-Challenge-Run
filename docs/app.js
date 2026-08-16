@@ -889,21 +889,29 @@
       const sFit = Math.min((w - PAD * 2) / Math.max(1, xHi - xLo), (h - PAD * 2) / Math.max(1, uHi - uLo));
       const dist = Math.max(120, Math.min(6000, 260 / Math.min(sFit, 0.55)));
       cam = { x: (xLo + xHi) / 2, u: (uLo + uHi) / 2, dist,
-              cx: w / 2, cy: h / 2, _life: camKey, _w: w, _h: h };
+              cx: w / 2, cy: h / 2, _life: camKey, _w: w, _h: h, _node: life.currentKey };
     } else {
       cam.cx = w / 2; cam.cy = h / 2;
-      // Zoom and pan both survive an upgrade. Pan is only nudged if the node
-      // you just moved to would otherwise sit off-canvas (possible when
-      // zoomed well in, where one step is a long way in screen pixels) —
-      // the smallest shift that brings it back inside a margin, so the view
-      // still reads as "where I left it" rather than a re-frame.
-      const s = 260 / cam.dist, M = 80;
-      const p = project(curNode.x, curNode.u);
-      if (p.x < M) cam.x -= (M - p.x) / s;
-      else if (p.x > w - M) cam.x += (p.x - (w - M)) / s;
-      if (p.y < M) cam.u += (M - p.y) / s;
-      else if (p.y > h - M) cam.u -= (p.y - (h - M)) / s;
+      // Zoom and pan both survive an upgrade. If the node you just moved TO
+      // would land off-canvas (possible when zoomed well in, where one step
+      // is a long way in screen pixels), nudge the view the smallest amount
+      // that brings it back inside a margin.
+      //
+      // Only when the current node actually CHANGED. renderWeaponTree() runs
+      // on every pan and zoom frame too, and applying this unconditionally
+      // turned it into a hard boundary — the drag moved a little, then the
+      // clamp yanked the camera straight back, so the tree simply refused to
+      // pan past the point where the current node reached the margin.
+      if (cam._node !== life.currentKey) {
+        const s = 260 / cam.dist, M = 80;
+        const p = project(curNode.x, curNode.u);
+        if (p.x < M) cam.x -= (M - p.x) / s;
+        else if (p.x > w - M) cam.x += (p.x - (w - M)) / s;
+        if (p.y < M) cam.u += (M - p.y) / s;
+        else if (p.y > h - M) cam.u -= (p.y - (h - M)) / s;
+      }
     }
+    cam._node = life.currentKey;
 
     const svg = $("treeSvg");
     const nodesWrap = $("treeNodes");

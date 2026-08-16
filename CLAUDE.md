@@ -776,6 +776,14 @@ landed off-canvas (possible when zoomed well in, where one step is a long
 way in screen pixels) — the smallest shift that keeps it visible, rather
 than a re-frame.
 
+**That nudge is gated on `cam._node !== life.currentKey` and must stay
+gated.** `renderWeaponTree()` re-runs on every pan and zoom frame, so
+applying the clamp unconditionally turned it into a hard boundary: a drag
+would move a little, then the clamp would yank the camera straight back,
+and the tree simply refused to pan past the point where the current node
+hit the margin. It's a correction for *having moved node*, not a
+constraint on where the camera may sit.
+
 **The camera refits when the canvas SIZE changes, not just the life.**
 `renderWeaponTree()` reads `canvas.clientWidth || 600` / `clientHeight ||
 400` — and a hidden `#weaponsPage` makes those `0`, so the first render
