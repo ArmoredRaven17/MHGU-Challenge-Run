@@ -79,6 +79,10 @@ node scripts/build-quests.js       # Key Quests, from the Randomizer's QuestData
 node scripts/build-trees.js        # weapon tree data, from mhgu-weapon-trees
 node scripts/build-craftables.js   # buyable/craftable items, from mhgu-collection-tracker's mhgu.db
 node scripts/merge-data.js         # combines the three into docs/data.js
+node scripts/verify-trees.js       # checks data-trees.json's branch links against
+                                    # mhgu-collection-tracker's own parents data — run
+                                    # this after build-trees.js, since nothing else
+                                    # catches a stale or dropped branch link
 ```
 
 GitHub Pages serves from `docs/`. Bump the `?v=N` on `styles.css`/`app.js`/
