@@ -1185,11 +1185,13 @@
       <div class="rs-row"><span>Starting Class</span><b>${c ? escapeHtml(c.label) : ""}</b></div>
       <div class="rs-row"><span>Weapon Rules</span><b>${run.weaponRulesMode === "basic" ? "Basic" : "Advanced"}</b></div>
       <div class="rs-row"><span>Quest Rules</span><b>${run.questRulesMode === "basic" ? "Basic" : "Advanced"}</b></div>
-      <div class="rs-row"><span>Hunter Rank</span><b>${run.hr}</b></div>
-      <div class="rs-row"><span>Lives</span><b>${aliveLives().length} alive / ${run.lives.length} total</b></div>` +
-      // Only when something is banked. Without this the sidebar can read
-      // "0 alive" on a run that is very much still going, which looks like
-      // the app failed to notice you'd been wiped out.
+      <div class="rs-row"><span>Hunter Rank</span><b>${run.hr}</b></div>` +
+      // No "Lives" row — the Progress block right below now carries Weapons
+      // Active / Weapons Lost, which said the same thing twice.
+      //
+      // Banked stays: it's the one piece not covered down there, and without
+      // it a run sitting at 0 active looks wiped rather than waiting on a
+      // pick.
       (run.pendingNewLives > 0
         ? `<div class="rs-row"><span>Banked</span><b>${run.pendingNewLives} to pick</b></div>`
         : "");

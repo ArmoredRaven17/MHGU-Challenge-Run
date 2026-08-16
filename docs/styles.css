@@ -386,18 +386,14 @@ body{
 .run-status .rs-row span:first-child{opacity:.6;text-transform:uppercase;font-size:10px;letter-spacing:.05em}
 .run-status .rs-row b{font-size:14px}
 
-/* ── Quest page layout (main column + right-hand progress panel) ─────── */
-.quest-layout{display:flex;gap:16px;align-items:flex-start}
-.quest-main{flex:1;min-width:0}
-.quest-progress{width:200px;flex-shrink:0;border:1px solid var(--line);border-radius:8px;
-  padding:10px 12px;background:var(--card)}
-.quest-progress .qp-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  opacity:.6;margin-bottom:4px}
-.quest-progress .run-status{padding:0}
-@media (max-width:700px){
-  .quest-layout{flex-direction:column}
-  .quest-progress{width:auto}
-}
+/* Progress moved out of a right-hand column on the Quests page and into the
+   sidebar, so it's visible from every tab and the quest list gets the full
+   width. Its own layout classes went with it — the block is just another
+   .run-status list under a labelled divider. */
+.sidebar-sep{height:1px;background:rgba(255,255,255,.12);margin:10px 4px 0}
+.qp-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  opacity:.6;padding:10px 4px 0}
+.qp-title + .run-status{padding-top:4px}
 
 /* ── Page tabs ──────────────────────────────────────────────────────── */
 .page-tabs{display:flex;gap:4px;margin-bottom:14px}

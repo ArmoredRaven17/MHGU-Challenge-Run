@@ -63,9 +63,9 @@ Weapon Selection tab, not Weapons — it points at the page that can act on
 it. Since the picker is that page's only content, `renderNewLifePicker()`
 also toggles `#noPicksNote`, so an empty selection page explains itself
 rather than showing a blank screen. The
-sidebar (`#runStatus`: starting class, weapon rules, quest rules, HR, lives
-alive/total, banked picks, plus the End Run button) stays visible across
-all three tabs. There
+sidebar stays visible across all three tabs and carries `#runStatus`
+(starting class, weapon rules, quest rules, HR, banked picks) plus the
+`#questProgress` block below it and the End Run button. There
 is deliberately no HR stepper — see "Hunter Rank Progress" below. There is
 no *standalone* Victory panel — an early version (always-visible Ahtal-Ka +
 3 Fatalis checkboxes) did nothing useful and was removed. The Fatalis
@@ -561,15 +561,21 @@ of sync. With no weapon in play it says so, and names the banked-pick count
 if there is one — otherwise a run sitting at 0 alive looks broken rather
 than waiting on you.
 
-### Quest page progress panel
+### Progress block (sidebar)
 
-A right-hand `.quest-progress` column (`#questsPage` becomes a
-`.quest-layout` flex row: `.quest-main` + this `<aside>`, stacking below on
-narrow screens under 700px) shows four always-current stats via
+`#questProgress` shows four always-current stats via
 `renderQuestProgress()`: Key Quests done/total (all 11 tiers, not just
-unlocked ones), Quests to Victory, Weapons Active, Weapons Lost. Reuses the
-sidebar's own `.run-status`/`.rs-row` markup rather than inventing a
-second stat-row style.
+unlocked ones), Quests to Victory, Weapons Active, Weapons Lost. It lives
+in the **sidebar**, under a labelled divider below `#runStatus`, and always
+used the sidebar's own `.run-status`/`.rs-row` markup — moving it there
+meant deleting its layout classes, not restyling it.
+
+It started as a right-hand column on the Quests page. Moving it into the
+sidebar makes it visible from every tab rather than just Quests, and hands
+the tier grid the full content width. **The sidebar's old "Lives" row went
+at the same time** — Weapons Active / Weapons Lost sitting directly below
+said the same thing twice. "Banked" stays, since nothing in the Progress
+block covers it and it's what explains a run showing 0 weapons active.
 
 **"Quests to Victory" is every remaining checkbox of either kind — Key
 Quests AND urgent quests — not just one pool.** First shipped counting
