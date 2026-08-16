@@ -2,7 +2,7 @@
 
 A permadeath challenge-run tracker for Monster Hunter Generations Ultimate.
 
-**Live:** (not yet deployed)
+**Live:** https://armoredraven17.github.io/MHGU-Challenge-Run/
 
 ## What it is
 

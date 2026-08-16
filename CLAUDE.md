@@ -1042,8 +1042,6 @@ run-over).
 
 ## Not built yet
 
-- The header reads "MHGU Challenge Run **WIP**" deliberately while the app
-  is still being built out; drop the suffix when it's ready to be shown off.
 - The "Other MHGU Apps" modal in the seven sibling repos doesn't yet link
   back to this app — needs the canonical list update once this one has a
   live URL.
