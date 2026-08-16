@@ -22,10 +22,24 @@ const fs = require("fs"), path = require("path");
 
 const SRC = process.argv[2] ||
   "C:/Coding Repos/mhgu-weapon-trees/docs/index.html";
+// Second source: mhgu-weapon-trees carries the tree shape but not whether a
+// tree can be forged from scratch, and that distinction is what decides
+// whether a life can start on it. mhgu-collection-tracker's materials files
+// keep it as create[treeId].d (a direct Create recipe) vs .f (only reachable
+// by upgrading something else) — see its build-data.mjs. Read straight from
+// there rather than inferring it from `p`: "is a branch" and "can't be
+// forged" are different questions, and 231 trees are both a branch AND
+// directly forgeable (Halberd, Lagiacrus Blade, Red Wing...).
+const CT_MATERIALS = process.argv[3] ||
+  "C:/Coding Repos/mhgu-collection-tracker/docs/data/materials";
 const OUT = path.join(__dirname, "..", "docs", "data-trees.json");
 
 if (!fs.existsSync(SRC)) {
   console.error("Cannot find " + SRC + "\nPass the mhgu-weapon-trees index.html path as an argument.");
+  process.exit(1);
+}
+if (!fs.existsSync(CT_MATERIALS)) {
+  console.error("Cannot find " + CT_MATERIALS + "\nPass mhgu-collection-tracker's docs/data/materials path as the second argument.");
   process.exit(1);
 }
 const html = fs.readFileSync(SRC, "utf8");
@@ -129,11 +143,22 @@ const classes = Object.keys(WDATA);
 const out = classes.map(slug => {
   const c = WDATA[slug];
   const STR = c.str || [];
+  const matsPath = path.join(CT_MATERIALS, slug + ".json");
+  if (!fs.existsSync(matsPath)) {
+    console.error(`ABORT: no ${slug}.json in ${CT_MATERIALS} — cannot tell which trees are forgeable`);
+    process.exit(1);
+  }
+  const { create = {} } = JSON.parse(fs.readFileSync(matsPath, "utf8"));
   const trees = c.trees.map(t => ({
     i: t.i,
     n: t.n,
     r: t.r,
     p: t.p || 0,          // [parentTreeId, unlockLevel], or 0 for a root tree
+    // 1 when this tree's first level has its own Create recipe, i.e. you can
+    // forge it outright. Absent means upgrade-only (or, for the 22 Rusted/Worn
+    // relic lines, dug up rather than made) — reachable by climbing into, but
+    // not something a new life can start on.
+    ...(create[t.i] && create[t.i].d ? { f: 1 } : {}),
     // [level, name, attack, affinity%, defense, slots, element[], sharpness, extra]
     levels: t.L.map(l => [l[0], l[1], l[2] || 0, l[3] || 0, l[4] || 0, l[5] || 0, l[6] || [],
                           l[9] || null, unpackExtra(slug, l, STR)]),
@@ -150,6 +175,11 @@ for (const c of out) {
   const hasPetrified = c.trees.some(t => !t.p && t.n.startsWith("Petrified"));
   if (!hasPetrified) {
     console.error(`ABORT: class "${c.slug}" has no root tree starting with "Petrified"`);
+    process.exit(1);
+  }
+  // Every class must have forgeable trees, or its new-life picker renders empty.
+  if (!c.trees.some(t => t.f)) {
+    console.error(`ABORT: class "${c.slug}" has no forgeable trees — the create data did not line up`);
     process.exit(1);
   }
 }

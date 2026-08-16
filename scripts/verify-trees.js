@@ -31,10 +31,15 @@ const challenge = JSON.parse(fs.readFileSync(TREES, "utf8"));
 const byClass = new Map(challenge.map(c => [c.slug, c]));
 
 let checked = 0, missing = [], mismatched = [];
+// Forgeable flags are checked in both directions: a tree wrongly marked
+// forgeable shows up as a startable weapon you can't actually make (the
+// Jawblade case), and one wrongly left unmarked silently disappears from the
+// picker. Neither is visible without comparing against create[].d.
+let forgeChecked = 0, forgeWrong = [];
 for (const c of challenge) {
   const materialsPath = path.join(CT_DIR, c.slug + ".json");
   if (!fs.existsSync(materialsPath)) continue;   // e.g. classes CT tracks that this app doesn't
-  const { parents = {} } = JSON.parse(fs.readFileSync(materialsPath, "utf8"));
+  const { parents = {}, create = {} } = JSON.parse(fs.readFileSync(materialsPath, "utf8"));
   const byId = new Map(c.trees.map(t => [t.i, t.p || 0]));
   for (const [tidStr, truth] of Object.entries(parents)) {
     const tid = Number(tidStr);
@@ -45,14 +50,21 @@ for (const c of challenge) {
       truth[0] === got[0] && truth[1] === got[1];
     if (!same) mismatched.push({ slug: c.slug, tid, truth, got });
   }
+  for (const t of c.trees) {
+    if (!create[t.i]) continue;                  // no recipe data either way
+    forgeChecked++;
+    const truth = !!(create[t.i] && create[t.i].d), got = !!t.f;
+    if (truth !== got) forgeWrong.push({ slug: c.slug, tid: t.i, name: t.n, truth, got });
+  }
 }
 
-console.log(`checked ${checked} branch links across ${byClass.size} classes`);
+console.log(`checked ${checked} branch links and ${forgeChecked} forge flags across ${byClass.size} classes`);
 for (const m of missing) console.log(`  MISSING  ${m.slug} tree ${m.tid} — collection-tracker says parent ${JSON.stringify(m.truth)}, data-trees.json has no such tree`);
 for (const m of mismatched) console.log(`  MISMATCH ${m.slug} tree ${m.tid} — collection-tracker: ${JSON.stringify(m.truth)}, data-trees.json: ${JSON.stringify(m.got)}`);
+for (const m of forgeWrong) console.log(`  FORGE    ${m.slug} tree ${m.tid} (${m.name}) — collection-tracker says forgeable=${m.truth}, data-trees.json says ${m.got}`);
 
-if (missing.length || mismatched.length) {
-  console.error(`\nFAIL: ${missing.length} missing, ${mismatched.length} mismatched. Re-run build-trees.js against a current mhgu-weapon-trees build.`);
+if (missing.length || mismatched.length || forgeWrong.length) {
+  console.error(`\nFAIL: ${missing.length} missing, ${mismatched.length} mismatched, ${forgeWrong.length} bad forge flags. Re-run build-trees.js against a current mhgu-weapon-trees build.`);
   process.exit(1);
 }
-console.log("OK — data-trees.json's branch links match mhgu-collection-tracker exactly.");
+console.log("OK — data-trees.json's branch links and forge flags match mhgu-collection-tracker exactly.");
