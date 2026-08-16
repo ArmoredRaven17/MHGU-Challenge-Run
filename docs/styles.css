@@ -499,6 +499,10 @@ body{
 
 /* ── Result screen ──────────────────────────────────────────────────── */
 .result-victory{color:#f0c264}
+.victory-flavor{margin:12px 0 0}
+.victory-flavor p{margin:0 0 8px;font-size:13px;line-height:1.5}
+.victory-flavor p:first-child{color:#f0c264;font-size:15px}
+.victory-flavor p:last-child{margin-bottom:0}
 
 /* ── Result screen weapon roster ────────────────────────────────────── */
 .weapon-roster{margin-top:18px}

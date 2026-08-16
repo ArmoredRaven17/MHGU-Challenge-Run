@@ -1709,18 +1709,34 @@
     const won = run.endReason === "victory";
     $("resultBody").innerHTML = `
       <h2${won ? ' class="result-victory"' : ""}>${won ? "Victory" : "Run Over"}</h2>
-      <p class="hint">${classBySlug[run.class] ? escapeHtml(classBySlug[run.class].label) : ""} —
-        ${won
-          ? (run.questRulesMode === "advanced"
-            ? "Ahtal-Ka and all three Fatalis defeated"
-            : "Ahtal-Ka defeated")
-          : run.endReason === "no-lives" ? "no weapons remaining" : "ended"}</p>` + `
+      <p class="hint">${classBySlug[run.class] ? escapeHtml(classBySlug[run.class].label) : ""}${won ? "" :
+        " — " + (run.endReason === "no-lives" ? "no weapons remaining" : "ended")}</p>`
+      + (won ? victoryFlavorHtml() : "") + `
       <div class="sum-stats">
         <div class="sum-stat"><b>${run.hr}</b><span>Hunter Rank</span></div>
         <div class="sum-stat"><b>${run.lives.length}</b><span>Lives used</span></div>
         <div class="sum-stat"><b>${soldCount}</b><span>Sold</span></div>
         <div class="sum-stat"><b>${keyDone}/${keyTotal}</b><span>Key quests</span></div>
       </div>` + weaponRosterHtml();
+  }
+
+  // The victory send-off. One line always, plus a line per Advanced rule the
+  // run was played under — those two lines are the *only* reward for having
+  // chosen the harder ruleset, so they're earned text, not decoration, and
+  // they never appear on a Basic run.
+  function victoryFlavorHtml() {
+    const cls = classBySlug[run.class];
+    const lines = ["You were Victorious! You manage to defeat Ahtal-Ka!"];
+    if (run.questRulesMode === "advanced") {
+      lines.push("You have achieved the impossible, you slayed the Trio of Fatalis! " +
+        "Stories of your accomplishments will be passed down for ages.");
+    }
+    if (run.weaponRulesMode === "advanced") {
+      lines.push(`You have mastered using the ${cls ? cls.label : "weapon"}. ` +
+        "Your skills will be the example for future hunters!");
+    }
+    return `<div class="victory-flavor">` +
+      lines.map(t => `<p>${escapeHtml(t)}</p>`).join("") + `</div>`;
   }
 
   // Every weapon the run used, with how many quests it cleared. Split into
