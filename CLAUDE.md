@@ -528,7 +528,13 @@ leaving a seam between its own bottom edge and the panel's.
 ### Current Weapon panel
 
 Sits beside Hunter Rank Progress in `.top-panels` (a flex row that stacks
-below 900px), which is why that panel is no longer full width. Shows the
+below 900px), which is why that panel is no longer full width. The two are
+**matched in height** via flex's default `align-items: stretch` — whichever
+has more content sets the height, and the shorter grows to meet it rather
+than leaving a ragged edge. This works cleanly only because `.panel` is
+already a flex column with `.panel-body { flex: 1 }` (from the tier-panel
+work), so the stretched body and its background texture fill the extra
+space instead of leaving a bare gap under the content — don't remove that. Shows the
 weapon actually in play — rarity icon, level name, class + tree + level,
 and full stats via the *same* `nodeStatBlockHtml()` the life cards and the
 tree tooltip use, so there's still one implementation of "how a weapon's

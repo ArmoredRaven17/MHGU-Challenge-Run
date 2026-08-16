@@ -421,10 +421,13 @@ body{
 .reminder p{margin:0 0 6px}
 .reminder p:last-child{margin-bottom:0}
 /* Hunter Rank Progress and Current Weapon sit side by side above the tier
-   grid. align-items:flex-start so the shorter of the two keeps its natural
-   height instead of stretching to match. Both stay full width once there
+   grid, matched in height — flex's default align-items:stretch, so the
+   shorter one grows to the taller rather than leaving a ragged edge.
+   .panel is already a flex column with .panel-body{flex:1} (see the tier
+   panels), so the body and its texture fill the stretched height instead
+   of leaving a bare gap under the content. Both go full width once there
    isn't room for two readable columns. */
-.top-panels{display:flex;gap:8px;align-items:flex-start;margin-bottom:14px}
+.top-panels{display:flex;gap:8px;margin-bottom:14px}
 .top-panels > .panel{flex:1 1 0;min-width:0}
 @media (max-width:900px){ .top-panels{flex-direction:column} .top-panels > .panel{width:100%} }
 
