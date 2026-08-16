@@ -1388,6 +1388,10 @@
       //   t.f   — the 22 Rusted/Worn relic lines, which are roots but excavated
       //           rather than forged, so a run can't choose to make one.
       .filter(t => t.f && !t.p)
+      // Gated on the run's own Hunter Rank: t.hr is the HR at which the tree's
+      // key material — the one that puts it in the smithy list — first becomes
+      // obtainable, so a tree above the current HR isn't reachable yet.
+      .filter(t => (t.hr || 1) <= run.hr)
       .filter(t => !usedTreeIds.has(t.i))
       .filter(t => !query || t.n.toLowerCase().includes(query))
       .sort((a, b) => a.r - b.r || a.n.localeCompare(b.n))
@@ -1397,10 +1401,15 @@
       // Against the startable count, not every tree — branches and relic lines
       // were never on offer, so counting them here would keep claiming trees
       // are left when there are none you could actually start on.
-      const startable = c.trees.filter(t => t.f && !t.p).length;
-      wrap.innerHTML = usedTreeIds.size >= startable
-        ? `<p class="hint">Every tree for ${escapeHtml(c.label)} has already been used this run.</p>`
-        : `<p class="hint">No trees match.</p>`;
+      const startable = c.trees.filter(t => t.f && !t.p);
+      const atHr = startable.filter(t => (t.hr || 1) <= run.hr);
+      // "Used them all" and "the rest need a higher HR" are different dead
+      // ends and read very differently to someone stuck on the screen.
+      wrap.innerHTML = usedTreeIds.size >= atHr.length && atHr.length < startable.length
+        ? `<p class="hint">Every ${escapeHtml(c.label)} tree available at HR ${run.hr} has been used. More open up as your Hunter Rank rises.</p>`
+        : usedTreeIds.size >= startable.length
+          ? `<p class="hint">Every tree for ${escapeHtml(c.label)} has already been used this run.</p>`
+          : `<p class="hint">No trees match.</p>`;
       return;
     }
     trees.forEach(t => {

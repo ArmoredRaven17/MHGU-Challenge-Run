@@ -76,7 +76,10 @@ python -m http.server 5581 --directory docs
 
 ```bash
 node scripts/build-quests.js       # Key Quests, from the Randomizer's QuestData.json
-node scripts/build-trees.js        # weapon tree data, from mhgu-weapon-trees
+node scripts/build-trees.js        # weapon tree data, from mhgu-weapon-trees +
+                                    # collection-tracker's materials (which trees
+                                    # are forgeable) + mhgu.db (the HR each one
+                                    # unlocks at, via its key material)
 node scripts/build-craftables.js   # buyable/craftable items, from mhgu-collection-tracker's mhgu.db
 node scripts/merge-data.js         # combines the three into docs/data.js
 node scripts/verify-trees.js       # checks data-trees.json's branch links against

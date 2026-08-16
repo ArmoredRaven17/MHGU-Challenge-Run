@@ -437,6 +437,9 @@ body{
 .new-life-picker{border:1px solid var(--accent-hover);border-radius:10px;padding:10px 12px;
   margin-bottom:14px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .new-life-picker .hint{margin:0 0 2px}
+/* Footnote under the results rather than part of the intro copy above them,
+   so the shared .hint margin doesn't pull it flush against the list. */
+.new-life-picker .tree-caveat{margin:8px 0 0;font-size:11px;font-style:italic;opacity:.6}
 .lc-class-row{margin-top:6px}
 .lc-class-row label{font-size:11px;opacity:.65}
 #lifeClassSelect{background:var(--bg2);color:var(--text);border:1px solid var(--line);

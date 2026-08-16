@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MHGU Challenge Run</title>
 <link rel="icon" type="image/webp" href="assets/MonsterIcons/MHGU-Question_Mark_Icon.webp">
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
 </head>
 <body>
 <div id="app">
@@ -92,13 +92,14 @@
       <div id="weaponsPage" class="hidden">
         <div id="newLifePicker" class="new-life-picker hidden">
           <p class="hint" id="newLifePickerHint">Hunter Rank up! Pick your new weapon &mdash; any tree
-            for your class, starting at its base.</p>
+            for your class you've reached the Hunter Rank for, starting at its base.</p>
           <div id="lifeClassRow" class="row gap hidden lc-class-row">
             <label for="lifeClassSelect">Weapon Type</label>
             <select id="lifeClassSelect"></select>
           </div>
           <input id="lifeTreeSearch" type="text" placeholder="Search trees&hellip;" autocomplete="off">
           <div id="lifeTreeResults" class="tree-results"></div>
+          <p class="hint tree-caveat">*Some weapons are selectable but may not be crafted right away</p>
         </div>
         <div class="weapons-layout">
         <aside class="weapons-panel">
@@ -254,7 +255,7 @@
   </div>
 </div>
 
-<script src="data.js?v=18"></script>
-<script src="app.js?v=56"></script>
+<script src="data.js?v=19"></script>
+<script src="app.js?v=57"></script>
 </body>
 </html>
