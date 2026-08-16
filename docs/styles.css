@@ -1,0 +1,507 @@
+/* MHFU game font (falls back to sans-serif for glyphs it lacks, e.g. ★ — © ) */
+@font-face{
+  font-family:'MHFU';
+  src:url('fonts/mhfu_font.ttf') format('truetype');
+  font-display:swap;
+}
+/* Theme variables are set at runtime from the chosen color (see app.js). */
+:root{
+  --bg:#3e3e3e; --bg1:#000000; --bg2:#333; --hover:#2f2f2f; --accent:#7a7a7a; --accent-hover:#9a9a9a;
+  --text:#f3f3f3; --text-dim:#ffffff; --line:#ffffff1f; --card:#ffffff0d;
+  --titlebar-overlay:rgba(0,0,0,0.18);
+  --dead:#ff4d4d; --good:#4caf50;
+}
+*{box-sizing:border-box;scrollbar-color:var(--accent) var(--bg2);scrollbar-width:thin}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-hover)}
+input,select,button,textarea{font-family:inherit}
+html,body{margin:0;height:100%;overflow:hidden}
+body{
+  font-family:'MHFU',"Segoe UI",system-ui,sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px;
+  user-select:none; -webkit-user-select:none;
+}
+#app{display:flex;flex-direction:column;height:100vh}
+.hidden{display:none !important}
+
+/* Title bar */
+.titlebar{display:flex;align-items:center;gap:10px;padding:8px 14px}
+.titlebar-header{
+  background-image:
+    linear-gradient(color-mix(in srgb,var(--accent) 90%,transparent),color-mix(in srgb,var(--accent) 90%,transparent)),
+    url('assets/titlebar-background.png');
+  background-size:auto 100%;background-position:left center;background-repeat:repeat;
+}
+.title-icon{width:32px;height:32px;object-fit:contain}
+.titlebar h1{font-size:15px;font-weight:600;margin:0;flex:1}
+.icon-btn{background:transparent;border:none;color:var(--text);font-size:18px;
+  cursor:pointer;padding:6px 9px;border-radius:6px;line-height:1}
+.icon-btn:hover{background:#ffffff1a}
+/* 18px matches the emoji glyphs' line box on the neighbouring buttons
+   exactly (font-size:18px, line-height:1), so every titlebar button ends up
+   the same height. 19px made this one 1px taller than the rest. */
+.icon-img{width:18px;height:18px;object-fit:contain;display:block}
+
+/* Layout */
+.layout{display:flex;flex:1;min-height:0}
+.sidebar{
+  width:clamp(240px, 22vw, 320px);
+  flex-shrink:0;padding:12px;overflow-y:scroll;scrollbar-gutter:stable;
+  display:flex;flex-direction:column;gap:8px;
+  background-image:
+    linear-gradient(color-mix(in srgb,var(--accent) 90%,transparent),color-mix(in srgb,var(--accent) 90%,transparent)),
+    url('assets/sidebar-background-texture1.png');
+  background-size:auto 100%;background-position:left center;background-repeat:repeat;
+}
+.content{flex:1;padding:18px;overflow-y:auto;min-width:0;background-color:var(--bg1)}
+@media (max-width:840px){
+  .layout{flex-direction:column;overflow-y:auto}
+  .sidebar,.content{width:auto;flex:0 0 auto;overflow:visible;scrollbar-gutter:auto}
+  .content{order:1} .sidebar{order:2}
+}
+
+/* Buttons */
+.btn{background:#ffffff14;color:var(--text);border:1px solid var(--line);
+  border-radius:7px;padding:8px 14px;cursor:pointer;font-size:14px}
+.btn:hover{background:#ffffff24}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled:hover{background:#ffffff14}
+.btn.block{width:100%}
+.btn.tiny{padding:3px 10px;font-size:12px}
+.btn.block,.btn.tiny{
+  background-image:
+    linear-gradient(color-mix(in srgb,var(--bg2) 80%,transparent),color-mix(in srgb,var(--bg2) 80%,transparent)),
+    url('assets/banner-background.png');
+  background-position:right;
+}
+.btn.block{padding-left:30px}
+.btn.accent{background:var(--bg1);border-color:#000;color:#fff;font-weight:600;
+  text-shadow:-1px 0 rgba(0,0,0,.55),1px 0 rgba(0,0,0,.55),0 -1px rgba(0,0,0,.55),0 1px rgba(0,0,0,.55)}
+.btn.accent:hover{background:var(--bg2)}
+.btn.accent:disabled{opacity:.45;background:#ffffff10;border-color:var(--line);
+  color:var(--text);font-weight:400;text-shadow:none}
+
+/* Collapsible panels */
+/* The panel-body texture lives on .panel itself now, not .panel-body — once
+   #tierList's grid started stretching panels to match their row's tallest
+   (see "Key quest checklist" below), a panel shorter than its row-mate had
+   dead space below its own head/body that showed .panel's old flat
+   background instead of the body's texture. Painting the texture as
+   .panel's own base means that leftover space is covered by the same
+   background regardless of why it's there — closed panel in a tall row, or
+   an open one whose checklist doesn't fill the stretched height. .panel is
+   also now a flex column with .panel-body{flex:1} so the body itself grows
+   to claim that leftover space when it's visible, rather than leaving it
+   entirely to the parent.  */
+.panel{border:1px solid var(--line);border-radius:8px;overflow:clip;
+  container-type:inline-size;display:flex;flex-direction:column;
+  background-color:var(--bg2);
+  background-image:
+    linear-gradient(color-mix(in srgb,var(--bg1) 60%,transparent),color-mix(in srgb,var(--bg1) 60%,transparent)),
+    url('assets/panel-body-bg.png');
+  background-size:contain 100%;background-position:left center;background-repeat:repeat;
+}
+.panel-head{width:100%;text-align:left;background:transparent;border:none;color:var(--text);
+  padding:8px clamp(9px,6.1cqi,16px) 8px clamp(12px,11.5cqi,30px);
+  font-size:clamp(15px,8.5cqi,22px);font-weight:600;
+  display:flex;justify-content:space-between;align-items:center;flex:0 0 auto;
+  background-image:
+    linear-gradient(color-mix(in srgb,var(--bg2) 80%,transparent),color-mix(in srgb,var(--bg2) 80%,transparent)),
+    url('assets/banner-background.png');
+  background-size:auto 100%;background-position:left center;background-repeat:repeat;
+}
+.panel-state{margin-left:auto;margin-right:10px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;opacity:.65}
+.panel-state.ready{opacity:1;color:var(--good)}
+.chev{transition:transform .15s;font-size:20px;font-weight:700;color:transparent}
+.panel[data-open="true"] .chev{transform:rotate(180deg)}
+.panel-body{display:none;padding:6px 12px 12px;flex-direction:column;gap:4px;flex:1}
+.panel[data-open="true"] .panel-body{display:flex}
+
+/* Checkboxes */
+.chk{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer;line-height:1.3}
+.chk input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;flex-shrink:0}
+.chk:hover{color:var(--accent-hover)}
+.chk:hover input{accent-color:var(--accent-hover,#9a9a9a)}
+/* Not yet reachable — distinct from an unticked box, which is still a live
+   decision. This one dims because there's nothing to decide yet. */
+.chk.na{opacity:.4;cursor:default}
+.chk.na input{cursor:not-allowed}
+
+.hint{color:var(--text-dim);opacity:.75;font-size:12px;margin:4px 0;line-height:1.45}
+.row{display:flex;align-items:center}
+.row.gap{gap:8px}.row.end{justify-content:flex-end}
+
+/* ── Start screen ───────────────────────────────────────────────────── */
+.start-card{max-width:760px;margin:0 auto}
+.start-card h2{margin:0 0 4px}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:8px;margin-top:8px}
+.pick-card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  background:var(--card);cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.pick-card:hover{border-color:var(--accent);background:#ffffff14}
+.pick-card.sel{border-color:var(--accent-hover);background:color-mix(in srgb,var(--accent) 30%,transparent)}
+.pick-card .pc-name{font-weight:600;font-size:13px}
+.pick-card .pc-sub{font-size:11px;opacity:.65}
+.pick-card img{width:28px;height:28px;object-fit:contain}
+
+/* ── Weapons page layout (weapon list left, tree right) ─────────────── */
+/* The weapon panel is a fixed-width scrolling column; the tree takes what's
+   left. Its max-height matches .tree-canvas's so the two columns line up,
+   and the inner list scrolls rather than the page growing without bound —
+   a long run can accumulate a lot of weapons, and each card is tall now
+   that it carries full stats. */
+.weapons-layout{display:flex;gap:14px;align-items:flex-start}
+/* Wide enough for the stats | songs/ammo split inside each card to sit as
+   two real columns rather than crushing the right one. The tree is vertical
+   precisely so this side can afford the width. */
+.weapons-panel{width:clamp(300px,34vw,470px);flex-shrink:0;display:flex;flex-direction:column;
+  max-height:min(72vh,620px);border:1px solid rgba(255,255,255,.11);border-radius:10px;
+  background:color-mix(in srgb,var(--bg1) 62%,#000);padding:10px 10px 4px}
+.weapons-panel .wp-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  opacity:.6;margin-bottom:8px;flex-shrink:0}
+/* min-height:0 is required — without it a flex child refuses to shrink below
+   its content height and the panel grows instead of the list scrolling. */
+.weapons-panel .lives-list{flex:1;min-height:0;overflow-y:auto;padding-right:4px;
+  padding-bottom:6px}
+.weapons-layout .tree-wrap{flex:1;min-width:0;margin-top:0}
+@media (max-width:820px){
+  .weapons-layout{flex-direction:column}
+  .weapons-panel{width:auto;align-self:stretch;max-height:420px}
+  .weapons-layout .tree-wrap{align-self:stretch;width:100%}
+}
+
+/* ── Weapon lives ───────────────────────────────────────────────────── */
+.lives-list{display:flex;flex-direction:column;gap:6px}
+.life-card{border:1px solid var(--line);border-radius:7px;padding:8px 10px;
+  background:var(--card);display:flex;flex-direction:column;gap:4px}
+.life-card.current{border-color:var(--accent-hover);background:#ffffff14}
+/* line-through on the whole card would strike out every stat row too, which
+   made a sold weapon's numbers unreadable — the strike belongs on its name
+   only, with the card just dimmed. */
+.life-card.sold{opacity:.6}
+.life-card.sold .lc-tree,.life-card.sold .lc-level{text-decoration:line-through}
+.life-card .lc-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.life-card .lc-tree{font-weight:600;font-size:12px}
+.life-card .lc-class{font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.04em}
+.life-card .lc-head{display:flex;align-items:center;gap:7px;margin-top:1px}
+.life-card .lc-icon{width:26px;height:26px;object-fit:contain;flex-shrink:0}
+.life-card .lc-level{font-size:11px;opacity:.8;line-height:1.25}
+.life-card .lc-level em{font-style:normal;opacity:.6;margin-left:3px}
+/* Same .stat-row/.stat-sharp markup the tree tooltip uses, re-scoped here —
+   slightly tighter, and with a divider so the stats read as a block rather
+   than running into the action buttons. */
+.life-card .lc-stats{margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.08)}
+.life-card .lc-stats .stat-row{display:flex;justify-content:space-between;gap:8px;
+  font-size:11px;padding:1px 0}
+.life-card .lc-stats .stat-row span{opacity:.6}
+.life-card .lc-stats .up{color:var(--good)}
+.life-card .lc-stats .dn{color:var(--dead)}
+.life-card .lc-stats .stat-sharp{margin-top:5px;display:flex;flex-direction:column;gap:2px}
+.life-card .lc-stats .stat-sharp-row{display:flex;align-items:center;gap:6px;font-size:10px}
+.life-card .lc-stats .stat-sharp-row span{width:26px;flex-shrink:0;opacity:.6}
+.life-card .lc-stats .stat-sharp-bar{flex:1;height:5px;border-radius:3px;overflow:hidden;
+  display:flex;background:#00000030}
+.life-card .lc-stats .stat-sharp-seg{height:100%}
+.life-card .lc-sold{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--dead);margin-top:5px}
+.life-card select{background:var(--bg2);color:var(--text);border:1px solid var(--line);
+  border-radius:5px;padding:3px 5px;font-size:11px;width:100%}
+.life-card .lc-actions{display:flex;gap:6px;margin-top:6px}
+
+/* ── Weapon tree (2.5D navigable view) ─────────────────────────────── */
+.tree-wrap{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.tree-toolbar{display:flex;align-items:center;justify-content:space-between}
+.tree-title{font-weight:600;font-size:13px}
+.tree-body{display:flex;gap:10px;align-items:stretch}
+/* isolation:isolate is load-bearing. renderWeaponTree() assigns each node an
+   inline z-index of 1000+i to control paint order among themselves; without
+   its own stacking context here, position:relative + z-index:auto means those
+   values compete in the ROOT stacking context and paint over anything with a
+   lower z-index — modals (100) included. Isolating scopes them to this box,
+   so node ordering still works internally while the canvas as a whole sits at
+   its normal place in the page's stacking order. */
+/* Deliberately darker than the page behind it (--bg1), so the pannable
+   region is obvious at a glance — this is the only part of the app that
+   drags/scrolls under the cursor, and it used to fade out to exactly
+   --bg1 at its edges, making it indistinguishable from the surrounding
+   page. Both gradient stops are now mixed toward black, keeping the
+   theme's hue while sitting clearly below the page's own lightness.
+   Border is an explicit rgba, NOT var(--line) — that token is
+   rgba(11,8,8,0.12) and is invisible on these dark backgrounds (same trap
+   that hid the tree's edge lines). */
+/* Taller than it is wide-ish now — the tree runs bottom-to-top, so vertical
+   room is what actually shows more of it. */
+.tree-canvas{position:relative;isolation:isolate;flex:1;min-width:0;height:min(72vh,620px);
+  border:1px solid rgba(255,255,255,.11);border-radius:10px;
+  background:radial-gradient(ellipse at 50% 30%,
+    color-mix(in srgb,var(--bg1) 74%,#000) 0%,
+    color-mix(in srgb,var(--bg1) 44%,#000) 80%);
+  box-shadow:inset 0 0 22px rgba(0,0,0,.45);
+  overflow:hidden;cursor:grab;user-select:none}
+.tree-canvas.grabbing{cursor:grabbing}
+.tree-canvas svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#treeNodes{position:absolute;inset:0}
+/* Structure ported from mhgu-weapon-trees: a dot (icon square) carries state
+   via its border/glow, a label pill sits below it, a smaller sub-label below
+   that. The icon itself can't carry rarity here (this app tracks name+level
+   only, no per-rarity art) so every node in a life's tree reuses its weapon
+   class's own icon — the dot's colour is what actually communicates state. */
+.tnode{position:absolute;transform:translate(-50%,-50%);text-align:center;
+  cursor:default;transition:opacity .15s}
+.tnode .tdot{width:32px;height:32px;margin:0 auto;border-radius:9px;
+  border:1.5px solid var(--line);background:rgba(10,12,17,.5);
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .12s,background .12s,box-shadow .12s}
+.tnode .tdot img{width:26px;height:26px;display:block;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))}
+.tnode .tlbl,.tnode .tsub{display:inline-block;background:rgba(0,0,0,.55);
+  border-radius:4px;padding:0 5px;white-space:nowrap}
+.tnode .tlbl{margin-top:5px;font-weight:600;font-size:11.5px;
+  text-shadow:0 1px 2px #000}
+.tnode .tsub{font-size:9.5px;opacity:.65;margin-top:2px}
+.tnode .tlbl:empty,.tnode .tsub:empty{display:none}
+
+.tnode.cur .tdot{border-color:#f0c264;background:rgba(240,194,100,.16);
+  box-shadow:0 0 0 4px rgba(240,194,100,.14),0 0 20px rgba(240,194,100,.5);
+  animation:tpulse 2.4s ease-in-out infinite}
+.tnode.cur .tlbl{color:#f0c264;font-size:13px}
+.tnode.past .tdot{border-color:rgba(240,194,100,.4);background:rgba(240,194,100,.07)}
+.tnode.past .tlbl{color:#c9b98a}
+.tnode.next .tdot{border-color:#79d2ff;background:rgba(121,210,255,.14);
+  box-shadow:0 0 14px rgba(121,210,255,.4);cursor:pointer}
+.tnode.next .tlbl{color:#79d2ff}
+.tnode.next:hover .tdot{box-shadow:0 0 22px rgba(121,210,255,.85);border-color:#a5e2ff}
+.tnode.far{opacity:.68}
+.tnode.far .tlbl{color:#9fb2be}
+/* A skipped branch is still an ordinary part of the tree — same solid dot
+   as anything else, just dimmer for not being on the current path. The
+   dotted reachability connector (drawn from the current node in
+   renderWeaponTree) is what says "still open," not the node's own styling. */
+.tnode.ghost{opacity:.62}
+.tnode.ghost .tlbl{color:#9a9382}
+/* Its entry point is clickable, so it gets a warm border matching the
+   connector's colour — the pairing is what links dot to dotted line. */
+.tnode.ghost.clickable{opacity:.9}
+.tnode.ghost.clickable .tdot{cursor:pointer;border-color:#e8c98a;background:rgba(232,201,138,.12)}
+.tnode.ghost.clickable:hover .tdot{border-color:#f5dcae;box-shadow:0 0 16px rgba(232,201,138,.6)}
+@keyframes tpulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(240,194,100,.14),0 0 20px rgba(240,194,100,.45)}
+  50%{box-shadow:0 0 0 7px rgba(240,194,100,.06),0 0 26px rgba(240,194,100,.75)}
+}
+
+/* ── Choices side panel (mirrors mhgu-weapon-trees' #choices list) ──── */
+.tree-choices{width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;
+  overflow-y:auto}
+.tree-choices h4{margin:0 0 2px;font-size:11px;text-transform:uppercase;
+  letter-spacing:.05em;opacity:.6}
+.choice-card{border:1px solid var(--line);border-radius:8px;padding:8px 10px;
+  background:var(--card);cursor:pointer;transition:background .1s,border-color .1s}
+.choice-card:hover{background:var(--hover);border-color:var(--accent-hover)}
+.choice-card.branch{border-left:3px solid #c9a227}
+.choice-card .cc-name{font-size:12px;font-weight:600}
+.choice-card .cc-lv{font-size:10px;opacity:.6;margin-left:4px}
+.choice-card .cc-tag{display:inline-block;margin-top:3px;font-size:9px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#c9a227;
+  border:1px solid #c9a227;border-radius:4px;padding:0 5px}
+/* A skipped branch you can still take — same muted "ghost" tone as its map
+   dot, dashed rather than solid to read as "still open," not "next step". */
+.choice-card.ghost{border-left:3px dashed #7d776c;opacity:.75}
+.choice-card.ghost .cc-tag{color:#7d776c;border-color:#7d776c}
+/* ── Node stats tooltip (viewport-fixed, not part of the tree canvas) ─ */
+.stat-tip{position:fixed;z-index:2000;pointer-events:none;width:200px;
+  border:1px solid var(--accent-hover);border-radius:8px;padding:9px 11px;
+  background:var(--bg2);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.stat-tip .stat-name{font-size:12px;font-weight:700;margin-bottom:5px}
+.stat-tip .stat-lv{font-weight:400;opacity:.6;font-size:11px;margin-left:3px}
+.stat-tip .stat-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
+  padding:1px 0}
+.stat-tip .stat-row span{opacity:.65}
+.stat-tip .up{color:var(--good)}
+.stat-tip .dn{color:var(--dead)}
+.stat-tip .stat-sharp{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.stat-tip .stat-sharp-row{display:flex;align-items:center;gap:6px;font-size:10px}
+.stat-tip .stat-sharp-row span{width:26px;flex-shrink:0;opacity:.65}
+.stat-tip .stat-sharp-bar{flex:1;height:6px;border-radius:3px;overflow:hidden;
+  display:flex;background:#00000030}
+.stat-tip .stat-sharp-seg{height:100%}
+
+/* ── Class extras: HH notes/songs, bowgun ammo ──────────────────────── */
+/* Two columns: the shared stat rows on the left, the class's own song/ammo
+   list to their RIGHT. ("Horizontal" meant this side-by-side split — an
+   earlier pass read it as chips wrapping within a row, which is not the
+   same thing.) Scoped to neither .stat-tip nor .life-card so both surfaces
+   share it, same as the stat rows themselves. */
+.stat-split{display:flex;gap:14px;align-items:flex-start}
+.stat-main{flex:0 0 auto;min-width:132px}
+.stat-extra{flex:1;min-width:0;border-left:1px solid rgba(255,255,255,.09);padding-left:12px}
+.stat-sub{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;
+  opacity:.5;margin-bottom:3px}
+.stat-extra .stat-sub:not(:first-child){margin-top:7px}
+.note-row{display:flex;gap:2px;align-items:center}
+.note-ico{width:15px;height:15px;display:block;flex-shrink:0}
+/* Name left, its notes/capacity right — a real list, one item per line. */
+.x-list{display:flex;flex-direction:column;gap:1px}
+.x-item{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-size:11px;line-height:1.45}
+.x-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x-val{display:flex;align-items:center;gap:1px;flex-shrink:0;opacity:.85;
+  font-variant-numeric:tabular-nums}
+.x-val .note-ico{width:12px;height:12px}
+/* Bowgun ammo tables — real tables so the numeric columns line up down the
+   page, which a flex list can't do once the names vary in length. */
+.x-table{width:100%;border-collapse:collapse;font-size:10.5px;line-height:1.45}
+.x-table th{font-weight:600;text-align:right;opacity:.45;font-size:9px;
+  text-transform:uppercase;letter-spacing:.04em;padding:0 0 2px 6px}
+.x-table th:first-child{text-align:left;padding-left:0}
+.x-table td{padding:1px 0 1px 6px;white-space:nowrap}
+.x-table td:first-child{padding-left:0}
+.x-table td.num{text-align:right;font-variant-numeric:tabular-nums;width:1%}
+.x-table td.a-n{overflow:hidden;text-overflow:ellipsis;max-width:0;width:99%}
+.x-table td i{font-style:normal;opacity:.28}
+.x-table tbody tr:nth-child(odd){background:#ffffff08}
+.x-table td.lv{opacity:.5;width:1%}
+/* A Load-Up-only charge level is dimmed — it isn't available on the bow as
+   it stands, only with the skill equipped. */
+.x-table tr.lu td.a-n{opacity:.6}
+.lu-tag{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  color:#e8c98a;border:1px solid #e8c98a66;border-radius:3px;padding:0 4px;white-space:nowrap}
+
+/* Bow coatings — short labels, so a wrapping row reads better than a table
+   with one value column and nothing in it. */
+.coat-row{display:flex;flex-wrap:wrap;gap:3px}
+.coat{font-size:9.5px;line-height:1.6;padding:0 5px;border-radius:4px;
+  border:1px solid;background:#00000033;white-space:nowrap}
+
+/* The tooltip is a fixed 200px, which can't hold two columns — widen it
+   only when it actually has an extras column to hold, and more again when
+   that column carries ammo tables rather than a song list. */
+.stat-tip:has(.stat-extra){width:400px}
+.stat-tip:has(.x-table){width:440px}
+
+.run-status{display:flex;flex-direction:column;gap:6px;padding:10px 4px;font-size:12px}
+.run-status .rs-row{display:flex;justify-content:space-between}
+.run-status .rs-row span:first-child{opacity:.6;text-transform:uppercase;font-size:10px;letter-spacing:.05em}
+.run-status .rs-row b{font-size:14px}
+
+/* ── Quest page layout (main column + right-hand progress panel) ─────── */
+.quest-layout{display:flex;gap:16px;align-items:flex-start}
+.quest-main{flex:1;min-width:0}
+.quest-progress{width:200px;flex-shrink:0;border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;background:var(--card)}
+.quest-progress .qp-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  opacity:.6;margin-bottom:4px}
+.quest-progress .run-status{padding:0}
+@media (max-width:700px){
+  .quest-layout{flex-direction:column}
+  .quest-progress{width:auto}
+}
+
+/* ── Page tabs ──────────────────────────────────────────────────────── */
+.page-tabs{display:flex;gap:4px;margin-bottom:14px}
+.page-tab{background:#ffffff10;color:var(--text);border:1px solid var(--line);
+  border-radius:7px;padding:6px 16px;cursor:pointer;font-size:13px;opacity:.65}
+.page-tab:hover{background:#ffffff1c;opacity:.85}
+.page-tab.on{opacity:1;font-weight:600;background:var(--bg2);border-color:var(--accent)}
+
+/* ── Key quest checklist ────────────────────────────────────────────── */
+.reminder{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--card);
+  margin:0 0 14px}
+/* Rows of narrower panels rather than one full-width column. Grid, not
+   flex-wrap — grid's default stretch is exactly what's wanted here: every
+   panel sharing a row matches the tallest one in that row, so an opened
+   panel doesn't leave its still-closed row-mates visibly shorter.
+   margin-top separates the grid from the Hunter Rank Progress panel above
+   it, which otherwise sits flush against the first row. */
+#tierList{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;
+  margin-top:14px}
+.tier-quests{display:flex;flex-direction:column;gap:2px}
+.tier-quest-row{display:flex;align-items:center;gap:6px}
+.tier-quest-row .chk{flex:1;min-width:0}
+/* margin-left, not a literal space in the template string — .panel-head is
+   a flex row, and a trailing-whitespace text node right before a flex
+   sibling collapses to 0 width instead of rendering as a gap. */
+.tier-completed{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--good);border:1px solid var(--good);border-radius:4px;padding:1px 6px;
+  vertical-align:middle;margin-left:8px}
+
+/* ── Hunter Rank Progress (urgent chain) ───────────────────────────── */
+.rank-hero{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.rank-hero b{font-size:22px}
+.rank-hero span{font-size:12px;opacity:.65}
+.rank-victory{color:#c9a227;font-weight:700}
+
+/* ── New-life picker (inline, Weapons page) / craftables search modal ── */
+.new-life-picker{border:1px solid var(--accent-hover);border-radius:10px;padding:10px 12px;
+  margin-bottom:14px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.new-life-picker .hint{margin:0 0 2px}
+.lc-class-row{margin-top:6px}
+.lc-class-row label{font-size:11px;opacity:.65}
+#lifeClassSelect{background:var(--bg2);color:var(--text);border:1px solid var(--line);
+  border-radius:5px;padding:4px 7px;font-size:12px;flex:1;min-width:0}
+#lifeTreeSearch,#craftSearch{background:var(--bg2);color:var(--text);border:1px solid var(--line);
+  border-radius:6px;padding:6px 10px;font-size:13px;width:100%;margin-top:6px}
+.tree-results,.craft-results{max-height:360px;overflow-y:auto;margin-top:8px;
+  display:flex;flex-direction:column;gap:2px}
+.tree-row{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+.tree-row:hover{background:var(--hover)}
+.tree-row .tr-rarity{font-size:11px;opacity:.6}
+.craft-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:5px 8px;border-radius:6px;font-size:12px}
+.craft-row:nth-child(odd){background:#ffffff08}
+/* Result on the left, its recipe on the right. The result is the answer to
+   "can I craft this"; the recipe is why. */
+.craft-name{font-weight:600;flex-shrink:0}
+.craft-recipe{font-size:11px;opacity:.7;text-align:right;min-width:0}
+.craft-recipe i{font-style:normal;opacity:.45;margin:0 2px}
+
+/* ── Result screen ──────────────────────────────────────────────────── */
+.summary{max-width:900px;margin:0 auto;padding:20px;border:1px solid var(--line);
+  border-radius:10px;background:var(--card)}
+.summary h2{margin:0 0 10px}
+.summary .sum-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;margin:14px 0}
+.summary .sum-stat{text-align:center;padding:10px 6px;border:1px solid var(--line);
+  border-radius:8px;background:#ffffff0a}
+.summary .sum-stat b{display:block;font-size:20px}
+.summary .sum-stat span{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.05em}
+
+/* ── Modals ─────────────────────────────────────────────────────────── */
+/* Topmost layer in the app, above .stat-tip's 2000 — a modal is a hard
+   interrupt, so nothing (including a hover tooltip left over from the tree)
+   should paint across it. Tree nodes no longer compete here at all; see the
+   isolation:isolate note on .tree-canvas. */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;
+  align-items:center;justify-content:center;z-index:3000;padding:20px}
+.modal-card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+  padding:20px;max-width:560px;width:100%;max-height:82vh;overflow-y:auto}
+.modal-card h2{margin:0 0 12px;font-size:22px}
+.modal-card h3{margin:18px 0 6px;font-size:15px;text-transform:uppercase;
+  letter-spacing:.06em;opacity:.75}
+.modal-card p,.modal-card li{line-height:1.55;font-size:13px}
+.modal-card ol,.modal-card ul{padding-left:20px;margin:6px 0}
+.modal-card li{margin:3px 0}
+.modal-card a{color:var(--accent-hover)}
+.modal-card .muted{color:var(--text-dim);font-size:13px;opacity:.75}
+
+/* Other MHGU apps modal */
+.app-links{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.app-links li{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:#ffffff08}
+.app-links li.current{opacity:.72}
+.app-links a,.app-name{font-weight:600;font-size:14px}
+.app-here{font-weight:400;font-size:11px;opacity:.7;border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:7px}
+.app-desc{display:block;margin-top:3px;font-size:12px;opacity:.8;line-height:1.4}
+
+/* Theme picker: square tiles, icon above a label bar. */
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px;
+  user-select:none;-webkit-user-select:none}
+.swatch{aspect-ratio:1;border-radius:8px;border:2px solid transparent;cursor:pointer;
+  position:relative;overflow:hidden}
+.swatch.sel{border-color:#fff}
+.swatch-icon{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:60%;
+  pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.swatch span{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;
+  line-height:1.5;color:#fff;background:rgba(0,0,0,.45)}

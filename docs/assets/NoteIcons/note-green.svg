@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Green eighth note">
+  <title>Green eighth note</title>
+  <ellipse cx="22" cy="48" rx="11" ry="8" fill="#3CB05D" transform="rotate(-22 22 48)"/>
+  <rect x="31" y="12" width="3" height="32" fill="#3CB05D"/>
+  <path d="M 32.5 12 C 44 18, 48 26, 44 38 C 47 30, 43 22, 32.5 20 Z" fill="#3CB05D"/>
+</svg>
