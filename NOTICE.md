@@ -71,7 +71,8 @@ version of the craftables lookup emitted a buyable flag derived from
 Carried over from the [MHGU Quest Randomizer](https://github.com/ArmoredRaven17)
 (same author): `assets/MonsterIcons/`, the generic (non-rarity) weapon-type
 icons in `assets/WeaponIcons/`, background textures, and the MHFU display
-font. The monster icons trace to the **Monster Hunter Fandom wiki**
+font, plus the `MH4G-Book_Icon_Grey.webp` used for the Craftables Lookup
+button. The monster icons trace to the **Monster Hunter Fandom wiki**
 (monsterhunter.fandom.com), licensed
 **[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)** — see the
 Randomizer's own notes for provenance detail.

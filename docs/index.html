@@ -13,7 +13,8 @@
   <header class="titlebar titlebar-header">
     <img class="title-icon" src="assets/MonsterIcons/MHGU-Question_Mark_Icon.webp" alt="">
     <h1>MHGU Challenge Run</h1>
-    <button id="rulesBtn" class="icon-btn" title="Rules" aria-label="Rules">&#8505;</button>
+    <button id="aboutBtn" class="icon-btn" title="About" aria-label="About">&#8505;</button>
+    <button id="rulesBtn" class="icon-btn" title="Rules" aria-label="Rules">?</button>
     <button id="craftBtn" class="icon-btn" title="Craftables lookup" aria-label="Craftables lookup"><img class="icon-img" src="assets/MH4G-Book_Icon_Grey.webp" alt=""></button>
     <button id="linksBtn" class="icon-btn" title="Other MHGU apps" aria-label="Other MHGU apps">&#128279;</button>
     <button id="themeBtn" class="icon-btn" title="Settings" aria-label="Settings">&#9881;</button>
@@ -169,6 +170,28 @@
   </div>
 </div>
 
+<!-- About / Attributions dialog. Condensed from NOTICE.md, which stays the
+     full record — keep the two in step when either changes. -->
+<div id="aboutModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>About / Attributions</h2>
+    <p>An unofficial, non-commercial fan tool for running a permadeath challenge run in Monster Hunter Generations Ultimate.</p>
+    <p><strong>Development:</strong> Built by the author with substantial help from <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>, Anthropic's AI coding tool. Most of the code, the data-generation scripts and this page were written with AI assistance, reviewed and directed by the author.</p>
+    <p><strong>Quest data:</strong> the quest list and its Key Quest flags come from the author's own <a href="https://armoredraven17.github.io/MHGU-Quest-Randomizer/" target="_blank" rel="noopener">MHGU Quest Randomizer</a>, tracing back to <a href="https://mhgu.kiranico.com" target="_blank" rel="noopener">Kiranico</a>. The urgent-quest chain that drives Hunter Rank was hand-sourced from Kiranico and cross-checked in game.</p>
+    <p><strong>Weapon trees &amp; stats:</strong> embedded from the author's <a href="https://armoredraven17.github.io/mhgu-weapon-trees/" target="_blank" rel="noopener">mhgu-weapon-trees</a>, itself sourced from <a href="https://mhgu.kiranico.com" target="_blank" rel="noopener">Kiranico</a> and <a href="https://github.com/JoeLago/MHGUDB-iOS" target="_blank" rel="noopener">JoeLago/MHGUDB-iOS</a> (MIT).</p>
+    <p><strong>Hunting Horn melodies:</strong> from the <code>horn_melodies</code> table of <a href="https://github.com/ArmoredRaven17/mhgu-collection-tracker" target="_blank" rel="noopener">mhgu-collection-tracker</a>'s database (JoeLago/MHGUDB-iOS, MIT, tracing to Kiranico).</p>
+    <p><strong>Crafting recipes:</strong> the Craftables lookup is built from <a href="https://mhgu.kiranico.com" target="_blank" rel="noopener">Kiranico</a>'s Combo List. Only the item names are used; the page itself isn't redistributed.</p>
+    <p><strong>Monster icons and the book icon:</strong> <a href="https://monsterhunter.fandom.com" target="_blank" rel="noopener">monsterhunter.fandom.com</a> &mdash; licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>.</p>
+    <p><strong>Per-rarity weapon icons:</strong> <a href="https://monsterhunterwiki.org/wiki/Category:MHGU_Equipment_Icons" target="_blank" rel="noopener">monsterhunterwiki.org</a> &mdash; licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>; these bundled copies stay under that licence.</p>
+    <p><strong>Hunting Horn note icons:</strong> original artwork carried over from the author's <a href="https://github.com/ArmoredRaven17" target="_blank" rel="noopener">mhgu-editor</a> (MIT).</p>
+    <p><strong>Menu textures and display font:</strong> carried over from the MHGU Quest Randomizer, edited from the developer's in-game screenshots.</p>
+    <p><strong>Theme palette:</strong> the 18 Deviants, carried over from the author's <a href="https://armoredraven17.github.io/MHGU-Zenny-Gauntlet/" target="_blank" rel="noopener">MHGU Zenny Gauntlet</a>.</p>
+    <p class="muted">Monster Hunter content is owned by Capcom. This tool is not affiliated with or endorsed by Capcom.</p>
+    <p class="muted">If anyone is misattributed or missing here, open an issue on the repository and it'll be corrected.</p>
+    <div class="row end"><button id="aboutClose" class="btn tiny">Close</button></div>
+  </div>
+</div>
+
 <div id="rulesModal" class="modal hidden">
   <div class="modal-card">
     <h2>Rules</h2>
@@ -274,6 +297,6 @@
 </div>
 
 <script src="data.js?v=19"></script>
-<script src="app.js?v=71"></script>
+<script src="app.js?v=72"></script>
 </body>
 </html>

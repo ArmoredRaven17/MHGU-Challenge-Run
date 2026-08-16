@@ -1880,6 +1880,8 @@
   $("craftClose").addEventListener("click", () => $("craftModal").classList.add("hidden"));
 
   // ── Simple modals ──────────────────────────────────────────────────────
+  $("aboutBtn").addEventListener("click", () => $("aboutModal").classList.remove("hidden"));
+  $("aboutClose").addEventListener("click", () => $("aboutModal").classList.add("hidden"));
   $("rulesBtn").addEventListener("click", () => $("rulesModal").classList.remove("hidden"));
   $("rulesClose").addEventListener("click", () => $("rulesModal").classList.add("hidden"));
   $("linksBtn").addEventListener("click", () => $("linksModal").classList.remove("hidden"));
