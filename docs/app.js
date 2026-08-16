@@ -416,9 +416,36 @@
       // Only ever checkable once ahtalKaCleared, and only matters under
       // Advanced quest rules — see victoryAchieved() and renderRankPanel().
       fatalisCleared: { fatalis: false, crimson: false, old: false },
+      // questName -> index of the life that was current when it was ticked.
+      // Storing WHICH weapon got the credit (rather than just bumping a
+      // counter) is what makes un-ticking correct: the count comes back off
+      // the weapon that earned it, even if the player has since switched or
+      // sold weapons. Quest names are unique across Key, urgent and Fatalis
+      // lists, so one flat map covers all three.
+      questCredits: {},
       ended: false,
       endReason: null,
     };
+  }
+
+  // Every checkbox that represents "I hunted a quest" routes through here so
+  // the tally can't drift between the three separate checklists.
+  function creditQuest(questName, checked) {
+    if (checked) {
+      const idx = run.currentLifeIndex;
+      const life = run.lives[idx];
+      // No weapon in play (last one sold, pick still banked) — nothing to
+      // credit. The quest still checks off; it just earns nobody a use.
+      if (!life || life.status !== "alive") return;
+      run.questCredits[questName] = idx;
+      life.uses = (life.uses || 0) + 1;
+    } else {
+      const idx = run.questCredits[questName];
+      if (idx == null) return;
+      const life = run.lives[idx];
+      if (life) life.uses = Math.max(0, (life.uses || 0) - 1);
+      delete run.questCredits[questName];
+    }
   }
 
   function save() {
@@ -1363,7 +1390,8 @@
         const i = run.urgentChecked.indexOf(name);
         if (e.target.checked && i === -1) run.urgentChecked.push(name);
         else if (!e.target.checked && i !== -1) run.urgentChecked.splice(i, 1);
-        save(); renderRankPanel(); renderTierList(); renderQuestProgress();
+        creditQuest(name, e.target.checked);
+        save(); renderRankPanel(); renderTierList(); renderQuestProgress(); renderCurrentWeapon();
         if (urgentStepReady(step)) triggerRankUp();
       });
     });
@@ -1574,7 +1602,8 @@
           const i = arr.indexOf(q.n);
           if (e.target.checked && i === -1) arr.push(q.n);
           else if (!e.target.checked && i !== -1) arr.splice(i, 1);
-          save(); renderTierList(); renderRankPanel(); renderQuestProgress();
+          creditQuest(q.n, e.target.checked);
+          save(); renderTierList(); renderRankPanel(); renderQuestProgress(); renderCurrentWeapon();
         });
         body.appendChild(label);
       });
@@ -1619,6 +1648,7 @@
         label.innerHTML = `<input type="checkbox" ${isChecked ? "checked" : ""} ${fatalisFrozen ? "disabled" : ""}> ${escapeHtml(questName)}`;
         label.querySelector("input").addEventListener("change", (e) => {
           run.fatalisCleared[k] = e.target.checked;
+          creditQuest(questName, e.target.checked);
           // Under Advanced rules the third Fatalis is the run's last quest,
           // so it gets the same "ready to end the run?" confirmation Basic
           // gives Ahtal-Ka. Cancelling un-checks it again rather than
@@ -1626,11 +1656,12 @@
           if (e.target.checked && victoryAchieved()) {
             confirmAction("Claim Victory?", VICTORY_CONFIRM, endRunVictorious, () => {
               run.fatalisCleared[k] = false;
-              save(); renderTierList(); renderRankPanel(); renderQuestProgress();
+              creditQuest(questName, false);
+              save(); renderTierList(); renderRankPanel(); renderQuestProgress(); renderCurrentWeapon();
             });
             return;
           }
-          save(); renderTierList(); renderRankPanel(); renderQuestProgress();
+          save(); renderTierList(); renderRankPanel(); renderQuestProgress(); renderCurrentWeapon();
         });
         hrBody.appendChild(label);
       });
@@ -1689,7 +1720,39 @@
         <div class="sum-stat"><b>${run.lives.length}</b><span>Lives used</span></div>
         <div class="sum-stat"><b>${soldCount}</b><span>Sold</span></div>
         <div class="sum-stat"><b>${keyDone}/${keyTotal}</b><span>Key quests</span></div>
+      </div>` + weaponRosterHtml();
+  }
+
+  // Every weapon the run used, with how many quests it cleared. Split into
+  // survivors and fallen rather than one list with a marker — at the end of a
+  // run "what did I lose" is a different question from "what am I still
+  // holding", and the fallen section is the run's casualty list.
+  function weaponRosterHtml() {
+    if (!run.lives.length) return "";
+    const row = (life, i) => {
+      const info = currentNodeInfo(life);
+      const cls = classBySlug[life.classSlug];
+      const uses = life.uses || 0;
+      return `<div class="wr-row">
+        <img class="wr-icon" src="${weaponRarityIcon(life.classSlug, info.stats ? info.stats.r : 0)}" alt="">
+        <div class="wr-id">
+          <div class="wr-name">${escapeHtml(info.levelName)}</div>
+          <div class="wr-sub">${escapeHtml(cls ? cls.label : "")} &middot; ${escapeHtml(info.treeName)} Lv${info.lv}</div>
+        </div>
+        <div class="wr-uses"><b>${uses}</b><span>quest${uses === 1 ? "" : "s"}</span></div>
       </div>`;
+    };
+    const alive = run.lives.filter(l => l.status === "alive");
+    const fallen = run.lives.filter(l => l.status !== "alive");
+    let html = `<div class="weapon-roster">`;
+    if (alive.length) {
+      html += `<div class="wr-title">Weapons Standing</div>` + alive.map(row).join("");
+    }
+    if (fallen.length) {
+      html += `<div class="wr-title wr-title-fallen">Fallen</div>` +
+        `<div class="wr-fallen">${fallen.map(row).join("")}</div>`;
+    }
+    return html + `</div>`;
   }
 
   // ── End run / new run ─────────────────────────────────────────────────

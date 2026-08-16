@@ -81,7 +81,7 @@ Rules and Victory" below.
 ## Core concept
 
 The unit of loss is a **weapon life** — `run.lives[]`, each
-`{classSlug, rootTreeId, currentKey, status: "alive"|"sold"}`. `currentKey`
+`{classSlug, rootTreeId, currentKey, status: "alive"|"sold", uses}`. `currentKey`
 (`"treeId:level"`) fully determines a life's position; the whole path it
 climbed back to its root is always derivable by walking `node.parent`, so
 nothing else needs storing (see "Weapon tree view" below). Start with 1
@@ -196,6 +196,19 @@ grew an optional `onCancelled` callback.
 `renderResult()` branches on `endReason === "victory"`: heading reads
 "Victory" (gold) instead of "Run Over", with a subtitle naming what was
 beaten. A won run and a lost one share that screen, so it has to say which.
+Below the stat tiles it lists the whole weapon roster — "Weapons Standing"
+first, then a faded, struck-through "Fallen" section — each row carrying the
+weapon's quest count.
+
+## Quest credit (`life.uses`)
+
+Ticking any quest box — Key Quest, urgent, or Fatalis — increments the
+**current** life's `uses`. Un-ticking has to give the count back to whichever
+weapon actually earned it, which is not necessarily the current one, so
+`run.questCredits` maps quest name → the life *index* that was current at tick
+time and `creditQuest(name, checked)` is the only thing that touches either
+side. Don't decrement `currentLifeIndex` on an un-tick: by then the player may
+have switched weapons or sold the one that did the work.
 
 **`run.ahtalKaCleared` still means exactly what it always did — the urgent
 chain's last step ("Castle on the Run," which *is* the Ahtal-Ka hunt) is
