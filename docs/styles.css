@@ -178,7 +178,7 @@ body{
 .life-card{border:1px solid var(--line);border-radius:7px;padding:8px 10px;
   background:var(--card);display:flex;flex-direction:column;gap:4px}
 /* Two different states, so two different signals. "current" is the weapon in
-   play (accent border + In play pill); "viewing" is only where the tree view
+   play (accent border + Current pill); "viewing" is only where the tree view
    is pointed, marked by a bar down the left edge. They're usually the same
    card, but the whole point of the tree's view index is that they needn't be. */
 .life-card.current{border-color:var(--accent-hover);background:#ffffff14}

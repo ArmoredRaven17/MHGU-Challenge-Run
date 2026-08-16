@@ -690,7 +690,7 @@
       const classTag = run.weaponRulesMode === "basic"
         ? `<span class="lc-class">${escapeHtml((classBySlug[life.classSlug] || {}).label || "?")}</span>` : "";
       let body = `<div class="lc-top">${classTag}<span class="lc-tree">${escapeHtml(info.treeName)}</span>` +
-        (isCurrent ? `<span class="lc-badge">In play</span>` : "") + `</div>`;
+        (isCurrent ? `<span class="lc-badge">Current</span>` : "") + `</div>`;
       body += `<div class="lc-head">` +
         `<img class="lc-icon" src="${weaponRarityIcon(life.classSlug, info.stats ? info.stats.r : 0)}" alt="">` +
         `<span class="lc-level">${escapeHtml(info.levelName)} <em>Lv${info.lv}</em></span></div>`;
@@ -926,7 +926,7 @@
     // isn't the one in play, an unlabelled title is a trap — you'd upgrade
     // what you thought was your active weapon.
     $("treeTitle").innerHTML = escapeHtml(`${info.treeName} — ${info.levelName} (Lv ${info.lv})`) +
-      (viewedIndex() === run.currentLifeIndex ? "" : ` <em class="tree-title-note">not in play</em>`);
+      (viewedIndex() === run.currentLifeIndex ? "" : ` <em class="tree-title-note">not current</em>`);
 
     const canvas = $("treeCanvas");
     const w = canvas.clientWidth || 600, h = canvas.clientHeight || 400;
