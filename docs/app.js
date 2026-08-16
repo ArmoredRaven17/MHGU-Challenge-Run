@@ -1344,6 +1344,12 @@
   // tier before it is already full) — this way the number always moves
   // when the player checks anything relevant, and pairs sensibly with the
   // Key Quests stat right above it.
+  // Every quest in the urgent chain, across all its steps. Shared by the
+  // sidebar counter and the result screen so the two can't disagree.
+  function urgentQuestTotal() {
+    return DATA.urgentChain.reduce((n, s) => n + s.quests.length, 0);
+  }
+
   function renderQuestProgress() {
     const keyDone = Object.values(run.keyQuestsChecked).reduce((n, a) => n + a.length, 0);
     const keyTotal = DATA.keyTiers.reduce((n, t) => n + t.quests.length, 0);
@@ -1352,12 +1358,17 @@
     // reaches this branch. Advanced switches from "quests remaining" to
     // "Fatalis remaining" — a different unit, but still a count
     // that hits zero exactly when victoryAchieved() flips true.
+    // The urgent chain is its own pool — the 13 quests that actually drive
+    // Hunter Rank — so it gets its own cleared/total row next to Key Quests
+    // rather than being folded into either of the other numbers.
+    const urgentTotal = urgentQuestTotal();
     const won = victoryAchieved();
     const toVictory = won ? 0
       : run.ahtalKaCleared ? FATALIS_KEYS.filter(k => !run.fatalisCleared[k]).length
       : (keyTotal - keyDone) + urgentQuestsLeft();
     $("questProgress").innerHTML = `
       <div class="rs-row"><span>Key Quests</span><b>${keyDone}/${keyTotal}</b></div>
+      <div class="rs-row"><span>Urgent Quests</span><b>${run.urgentChecked.length}/${urgentTotal}</b></div>
       <div class="rs-row"><span>Quests to Victory</span><b>${won ? "Victory!" : toVictory}</b></div>
       <div class="rs-row"><span>Weapons Active</span><b>${aliveLives().length}</b></div>
       <div class="rs-row"><span>Weapons Lost</span><b>${lost}</b></div>`;
@@ -1767,6 +1778,7 @@
         <div class="sum-stat"><b>${run.lives.length}</b><span>Weapons obtained</span></div>
         <div class="sum-stat"><b>${soldCount}</b><span>Weapons lost</span></div>
         <div class="sum-stat"><b>${keyDone}/${keyTotal}</b><span>Key quests</span></div>
+        <div class="sum-stat"><b>${run.urgentChecked.length}/${urgentQuestTotal()}</b><span>Urgent quests</span></div>
       </div>` + weaponRosterHtml();
   }
 
