@@ -1313,14 +1313,18 @@
         ? (advancedQuests
           ? "Ahtal-Ka's urgent quest is done. Under Advanced quest rules, Victory still needs all three Fatalis — track them on the Quests page."
           : "Ahtal-Ka's urgent quest is done — this marks Victory. The run keeps going, in case you switch it up next time.")
-        : `The urgent quest${step.quests.length > 1 ? "s are" : " is"} done — Hunter Rank advances to ${step.toHr} ` +
-          "and you'll pick a new weapon on the Weapons page.",
+        : "Once you rank up, you will earn another weapon. You do not need to select one " +
+          "right away as weapon selections bank. Once you know which weapon you wish to add, " +
+          "visit the Weapons Page",
       () => {
         if (isVictory) run.ahtalKaCleared = true;
         else { run.hr = step.toHr; run.pendingNewLives = (run.pendingNewLives || 0) + 1; }
         run.urgentStepIndex++;
         save(); renderRunStatus(); renderRankPanel(); renderTierList(); renderQuestProgress();
-        if (!isVictory) { activeTab = "weapons"; renderTabs(); renderLives(); }
+        // Stay on the Quests page. Picks bank, so there's no reason to yank
+        // someone out of what they were doing — the Weapons tab carries a
+        // count of what's owed, which is how they find their way over.
+        if (!isVictory) { renderLives(); renderTabs(); }
       });
   }
 
@@ -1344,10 +1348,15 @@
     picker.classList.toggle("hidden", pending <= 0);
     if (pending <= 0) return;
     const basic = run.weaponRulesMode === "basic";
-    $("newLifePickerHint").textContent = (pending > 1
-      ? `Hunter Rank up! Pick ${pending} new weapons — `
-      : "Hunter Rank up! Pick your new weapon — ") +
-      (basic ? "any class and tree, starting at its base." : "any tree for your class, starting at its base.");
+    // Lead with the count — picks bank, so someone arriving here may be owed
+    // several and needs to see that without counting rows. Reads "1 weapon
+    // pick banked" even for one, rather than hiding the number in that case:
+    // the whole point is that the number is the thing being tracked.
+    $("newLifePickerHint").innerHTML =
+      `<strong>${pending} weapon pick${pending > 1 ? "s" : ""} banked.</strong> Choose ` +
+      (basic ? "any class and tree" : "any tree for your class") +
+      " you've reached the Hunter Rank for, starting at its base." +
+      (pending > 1 ? " Pick them one at a time — the rest keep." : "");
     // Advanced rules: no choice, always the run's own class. Basic: defaults
     // to it too (the natural first guess) but stays whatever the player last
     // browsed to across multiple pending picks, rather than snapping back.
@@ -1547,6 +1556,11 @@
   function renderTabs() {
     $("tabQuests").classList.toggle("on", activeTab === "quests");
     $("tabWeapons").classList.toggle("on", activeTab === "weapons");
+    // A rank-up no longer jumps to the Weapons page, so the tab itself has to
+    // carry the news — otherwise banked picks are invisible from Quests.
+    const pending = run.pendingNewLives || 0;
+    $("tabWeapons").innerHTML = "Weapons" +
+      (pending > 0 ? ` <span class="tab-badge">${pending}</span>` : "");
     $("questsPage").classList.toggle("hidden", activeTab !== "quests");
     $("weaponsPage").classList.toggle("hidden", activeTab !== "weapons");
     // Re-render the tree once the page is actually visible. A hidden
