@@ -1714,8 +1714,8 @@
       + (won ? victoryFlavorHtml() : "") + `
       <div class="sum-stats">
         <div class="sum-stat"><b>${run.hr}</b><span>Hunter Rank</span></div>
-        <div class="sum-stat"><b>${run.lives.length}</b><span>Lives used</span></div>
-        <div class="sum-stat"><b>${soldCount}</b><span>Sold</span></div>
+        <div class="sum-stat"><b>${run.lives.length}</b><span>Weapons obtained</span></div>
+        <div class="sum-stat"><b>${soldCount}</b><span>Weapons lost</span></div>
         <div class="sum-stat"><b>${keyDone}/${keyTotal}</b><span>Key quests</span></div>
       </div>` + weaponRosterHtml();
   }
