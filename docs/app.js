@@ -1228,6 +1228,19 @@
   // into disagreeing about it. Basic: Ahtal-Ka alone. Advanced: Ahtal-Ka is
   // a milestone, not the finish line — all three Fatalis too.
   const FATALIS_KEYS = ["fatalis", "crimson", "old"];
+  // Shown at whichever quest is actually the run's last — Ahtal-Ka under
+  // Basic quest rules, the third Fatalis under Advanced.
+  const VICTORY_CONFIRM = "This will be the last quest of the run. Marking it complete will " +
+    "take you to the Victory Results screen. Are you ready to end the run?";
+  // Ends the run as WON, distinct from running out of weapons. renderAll()
+  // swaps to the result screen off run.ended, so this just sets the state
+  // and re-renders rather than juggling visibility itself.
+  function endRunVictorious() {
+    run.ended = true;
+    run.endReason = "victory";
+    save();
+    renderAll();
+  }
   function victoryAchieved() {
     if (!run.ahtalKaCleared) return false;
     if (run.questRulesMode !== "advanced") return true;
@@ -1364,7 +1377,7 @@
       isVictory
         ? (advancedQuests
           ? "Ahtal-Ka's urgent quest is done. Under Advanced quest rules, Victory still needs all three Fatalis — track them on the Quests page."
-          : "Ahtal-Ka's urgent quest is done — this marks Victory. The run keeps going, in case you switch it up next time.")
+          : VICTORY_CONFIRM)
         : "Once you rank up, you will earn another weapon. You do not need to select one " +
           "right away as weapon selections bank. Once you know which weapon you wish to add, " +
           "visit the Weapons Page",
@@ -1372,6 +1385,11 @@
         if (isVictory) run.ahtalKaCleared = true;
         else { run.hr = step.toHr; run.pendingNewLives = (run.pendingNewLives || 0) + 1; }
         run.urgentStepIndex++;
+        // Under Basic rules Ahtal-Ka IS the finish, so confirming it ends the
+        // run then and there. Under Advanced it's only a milestone — the
+        // three Fatalis still follow, and the run ends when the last of them
+        // is checked off (see renderRankPanel).
+        if (isVictory && victoryAchieved()) { endRunVictorious(); return; }
         save(); renderRunStatus(); renderRankPanel(); renderTierList(); renderQuestProgress();
         // Stay on the Quests page. Picks bank, so there's no reason to yank
         // someone out of what they were doing — the Weapons tab carries a
@@ -1599,6 +1617,17 @@
         label.innerHTML = `<input type="checkbox" ${isChecked ? "checked" : ""} ${fatalisFrozen ? "disabled" : ""}> ${escapeHtml(questName)}`;
         label.querySelector("input").addEventListener("change", (e) => {
           run.fatalisCleared[k] = e.target.checked;
+          // Under Advanced rules the third Fatalis is the run's last quest,
+          // so it gets the same "ready to end the run?" confirmation Basic
+          // gives Ahtal-Ka. Cancelling un-checks it again rather than
+          // leaving the run sat in a won-but-not-ended state.
+          if (e.target.checked && victoryAchieved()) {
+            confirmAction("Claim Victory?", VICTORY_CONFIRM, endRunVictorious, () => {
+              run.fatalisCleared[k] = false;
+              save(); renderTierList(); renderRankPanel(); renderQuestProgress();
+            });
+            return;
+          }
           save(); renderTierList(); renderRankPanel(); renderQuestProgress();
         });
         hrBody.appendChild(label);
@@ -1642,10 +1671,17 @@
     const soldCount = run.lives.filter(l => l.status === "sold").length;
     const keyDone = Object.values(run.keyQuestsChecked).reduce((n, a) => n + a.length, 0);
     const keyTotal = DATA.keyTiers.reduce((n, t) => n + t.quests.length, 0);
+    // A won run and a lost one both land here, so the heading has to say
+    // which — "Run Over" on a victory would read as failure.
+    const won = run.endReason === "victory";
     $("resultBody").innerHTML = `
-      <h2>Run Over</h2>
+      <h2${won ? ' class="result-victory"' : ""}>${won ? "Victory" : "Run Over"}</h2>
       <p class="hint">${classBySlug[run.class] ? escapeHtml(classBySlug[run.class].label) : ""} —
-        ${run.endReason === "no-lives" ? "no weapons remaining" : "ended"}</p>
+        ${won
+          ? (run.questRulesMode === "advanced"
+            ? "Ahtal-Ka and all three Fatalis defeated"
+            : "Ahtal-Ka defeated")
+          : run.endReason === "no-lives" ? "no weapons remaining" : "ended"}</p>` + `
       <div class="sum-stats">
         <div class="sum-stat"><b>${run.hr}</b><span>Hunter Rank</span></div>
         <div class="sum-stat"><b>${run.lives.length}</b><span>Lives used</span></div>
@@ -1708,7 +1744,11 @@
   $("themeBtn").addEventListener("click", () => $("themeModal").classList.remove("hidden"));
   $("themeClose").addEventListener("click", () => $("themeModal").classList.add("hidden"));
 
-  function confirmAction(title, body, onOk) {
+  // onCancelled is optional — only needed when backing out has to undo
+  // something the caller already did (e.g. re-checking a checkbox that
+  // triggered the confirm). Backdrop clicks route through the Cancel button,
+  // so they run it too.
+  function confirmAction(title, body, onOk, onCancelled) {
     $("confirmTitle").textContent = title;
     $("confirmBody").textContent = body;
     $("confirmModal").classList.remove("hidden");
@@ -1719,7 +1759,7 @@
       $("confirmModal").classList.add("hidden");
     };
     const onClick = () => { cleanup(); onOk(); };
-    const onCancel = () => cleanup();
+    const onCancel = () => { cleanup(); if (onCancelled) onCancelled(); };
     okBtn.addEventListener("click", onClick);
     cancelBtn.addEventListener("click", onCancel);
   }

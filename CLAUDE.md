@@ -184,6 +184,19 @@ function victoryAchieved() {
 }
 ```
 
+**Completing the run's last quest ends it and shows the result screen**, via
+`endRunVictorious()` → `run.ended` + `run.endReason = "victory"`. Which
+quest that is depends on the mode: Ahtal-Ka under Basic, the third Fatalis
+under Advanced. Both show the same `VICTORY_CONFIRM` copy first ("this will
+be the last quest of the run…"), so the run never ends without asking. The
+Advanced case cancels cleanly — backing out un-checks the Fatalis box
+rather than leaving the run won-but-not-ended, which is why `confirmAction`
+grew an optional `onCancelled` callback.
+
+`renderResult()` branches on `endReason === "victory"`: heading reads
+"Victory" (gold) instead of "Run Over", with a subtitle naming what was
+beaten. A won run and a lost one share that screen, so it has to say which.
+
 **`run.ahtalKaCleared` still means exactly what it always did — the urgent
 chain's last step ("Castle on the Run," which *is* the Ahtal-Ka hunt) is
 done.** That doesn't change between modes; only whether it's *sufficient*

@@ -502,6 +502,7 @@ body{
 .craft-recipe i{font-style:normal;opacity:.45;margin:0 2px}
 
 /* ── Result screen ──────────────────────────────────────────────────── */
+.result-victory{color:#f0c264}
 .summary{max-width:900px;margin:0 auto;padding:20px;border:1px solid var(--line);
   border-radius:10px;background:var(--card)}
 .summary h2{margin:0 0 10px}
