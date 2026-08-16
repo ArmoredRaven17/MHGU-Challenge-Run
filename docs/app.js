@@ -1377,25 +1377,28 @@
     // life can be any class, and tree ids aren't unique across classes.
     const usedTreeIds = new Set(run.lives.filter(l => l.classSlug === c.slug).map(l => l.rootTreeId));
     const trees = c.trees
-      // Only trees you can actually forge from scratch (t.f). A life starts at
-      // levels[0], so an upgrade-only line like Jawblade — which exists solely
-      // as a branch off Bone Cleaver level 3 — was being offered as its own
-      // startable weapon, when in game the only way to hold one is to climb
-      // the Bone tree into it. Filtering on !t.p instead would be wrong in the
-      // other direction: plenty of branches (Halberd, Red Wing) do have their
-      // own forge recipe and are legitimate starting points.
-      .filter(t => t.f)
+      // A life starts at levels[0] and the tree view is built from there, so a
+      // life may only start at the base of a whole tree — otherwise you get a
+      // partial tree, showing the climb from halfway up rather than the line
+      // entire. That rules out two kinds of pick:
+      //   !t.p  — anything that hangs off another line. Jawblade (upgrade-only,
+      //           a branch off Bone Cleaver 3) and Halberd alike: Halberd does
+      //           have its own forge recipe, but starting there would still
+      //           lop off everything below it, so its Create path is ignored.
+      //   t.f   — the 22 Rusted/Worn relic lines, which are roots but excavated
+      //           rather than forged, so a run can't choose to make one.
+      .filter(t => t.f && !t.p)
       .filter(t => !usedTreeIds.has(t.i))
       .filter(t => !query || t.n.toLowerCase().includes(query))
       .sort((a, b) => a.r - b.r || a.n.localeCompare(b.n))
       .slice(0, 200);
     const wrap = $("lifeTreeResults"); wrap.innerHTML = "";
     if (!trees.length) {
-      // Against the forgeable count, not every tree — upgrade-only lines were
-      // never on offer, so counting them here would keep claiming trees are
-      // left when there are none you could actually start on.
-      const forgeable = c.trees.filter(t => t.f).length;
-      wrap.innerHTML = usedTreeIds.size >= forgeable
+      // Against the startable count, not every tree — branches and relic lines
+      // were never on offer, so counting them here would keep claiming trees
+      // are left when there are none you could actually start on.
+      const startable = c.trees.filter(t => t.f && !t.p).length;
+      wrap.innerHTML = usedTreeIds.size >= startable
         ? `<p class="hint">Every tree for ${escapeHtml(c.label)} has already been used this run.</p>`
         : `<p class="hint">No trees match.</p>`;
       return;
