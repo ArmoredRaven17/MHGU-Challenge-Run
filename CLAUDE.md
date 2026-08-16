@@ -81,10 +81,19 @@ entirely by the real urgent-quest chain, not a manual stepper — see
 "Hunter Rank Progress" below.
 
 Failing a quest sells the weapon in play, permanently — `status: "sold"`, no
-replacement. The run ends once `aliveLives().length === 0`; `settleRunEnd()`
+replacement. The run ends once `weaponsRemaining() === 0`; `settleRunEnd()`
 latches that into `run.ended`/`run.endReason` so a reloaded finished run
 recognizes itself without a fresh mutation, the same pattern the Zenny
 Gauntlet uses for its own run-over state.
+
+**`weaponsRemaining()` is alive lives PLUS banked picks, not just alive
+lives.** A rank-up's weapon that hasn't been chosen yet (`pendingNewLives`)
+is a weapon you still have — selling your last *alive* one while holding a
+banked pick isn't the end of the run, because you can still go and pick it,
+and the picker is already on screen. Checking only `aliveLives()` ended
+those runs outright. The sidebar shows a "Banked — N to pick" row whenever
+`pendingNewLives > 0`, so a run sitting at "0 alive" doesn't look like the
+app failed to notice a wipe.
 
 A new life (from a Hub rank-up) may be **any** tree, not just a starter —
 that restriction only applies to the very first weapon. Every new life

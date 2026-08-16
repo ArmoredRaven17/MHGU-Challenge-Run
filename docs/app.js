@@ -452,8 +452,14 @@
   // Run-over is derived from lives, but latched into ended/endReason once true,
   // so a reloaded finished run recognizes itself without a fresh mutation.
   function aliveLives() { return run.lives.filter(l => l.status === "alive"); }
+  // A banked pick (run.pendingNewLives — a rank-up's weapon that hasn't been
+  // chosen yet) counts as a weapon you still have. Selling your last ALIVE
+  // weapon while holding one isn't the end of the run: you can still go and
+  // pick that weapon, and the picker is already showing. The run ends only
+  // when there's nothing alive AND nothing banked left to draw on.
+  function weaponsRemaining() { return aliveLives().length + (run.pendingNewLives || 0); }
   function settleRunEnd() {
-    if (run.active && !run.ended && run.lives.length > 0 && aliveLives().length === 0) {
+    if (run.active && !run.ended && run.lives.length > 0 && weaponsRemaining() === 0) {
       run.ended = true;
       run.endReason = "no-lives";
     }
@@ -1175,7 +1181,13 @@
       <div class="rs-row"><span>Weapon Rules</span><b>${run.weaponRulesMode === "basic" ? "Basic" : "Advanced"}</b></div>
       <div class="rs-row"><span>Quest Rules</span><b>${run.questRulesMode === "basic" ? "Basic" : "Advanced"}</b></div>
       <div class="rs-row"><span>Hunter Rank</span><b>${run.hr}</b></div>
-      <div class="rs-row"><span>Lives</span><b>${aliveLives().length} alive / ${run.lives.length} total</b></div>`;
+      <div class="rs-row"><span>Lives</span><b>${aliveLives().length} alive / ${run.lives.length} total</b></div>` +
+      // Only when something is banked. Without this the sidebar can read
+      // "0 alive" on a run that is very much still going, which looks like
+      // the app failed to notice you'd been wiped out.
+      (run.pendingNewLives > 0
+        ? `<div class="rs-row"><span>Banked</span><b>${run.pendingNewLives} to pick</b></div>`
+        : "");
   }
 
   // ── Victory ──────────────────────────────────────────────────────────
