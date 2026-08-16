@@ -764,6 +764,18 @@ of them error when they disagree — they just render subtly wrong:
 against canvas width vs height), and the pan handler's `dx`/`dy` → `cam`
 assignment plus signs.
 
+**Upgrading a weapon preserves zoom and pan.** `cam._life` is keyed on the
+life's *identity* — `classSlug + ":" + rootTreeId`, stable for its whole
+climb — not on `life.currentKey`, which changes with every upgrade and so
+made each advance look like a new life and re-fit the camera, discarding
+whatever zoom the player had set. Class+root is unique per life because a
+tree can only be used once per run. Switching to a *different* life still
+reframes, which is the point. Pan is left alone too, except that the
+just-reached node is nudged back inside an 80px margin if it would have
+landed off-canvas (possible when zoomed well in, where one step is a long
+way in screen pixels) — the smallest shift that keeps it visible, rather
+than a re-frame.
+
 **The camera refits when the canvas SIZE changes, not just the life.**
 `renderWeaponTree()` reads `canvas.clientWidth || 600` / `clientHeight ||
 400` — and a hidden `#weaponsPage` makes those `0`, so the first render

@@ -868,7 +868,14 @@
     // fallback dimensions is wrong for the real canvas. Comparing _w/_h
     // makes that self-correcting instead of depending on one caller
     // remembering to re-render at the right moment.
-    if (!cam || cam._life !== life.currentKey || cam._w !== w || cam._h !== h) {
+    // Keyed on the life's IDENTITY (its class + root tree), not on
+    // life.currentKey — currentKey changes on every upgrade, so keying on it
+    // made each advance look like a brand-new life and re-fit the camera,
+    // throwing away whatever zoom the player had set. class+root is stable
+    // for a life's whole climb, and unique across lives since a tree can
+    // only be used once per run.
+    const camKey = life.classSlug + ":" + life.rootTreeId;
+    if (!cam || cam._life !== camKey || cam._w !== w || cam._h !== h) {
       const ns = [...nodes.values()];
       const uLo = Math.min(...ns.map(n => n.u)), uHi = Math.max(...ns.map(n => n.u));
       const xLo = Math.min(...ns.map(n => n.x)), xHi = Math.max(...ns.map(n => n.x));
@@ -882,9 +889,20 @@
       const sFit = Math.min((w - PAD * 2) / Math.max(1, xHi - xLo), (h - PAD * 2) / Math.max(1, uHi - uLo));
       const dist = Math.max(120, Math.min(6000, 260 / Math.min(sFit, 0.55)));
       cam = { x: (xLo + xHi) / 2, u: (uLo + uHi) / 2, dist,
-              cx: w / 2, cy: h / 2, _life: life.currentKey, _w: w, _h: h };
+              cx: w / 2, cy: h / 2, _life: camKey, _w: w, _h: h };
     } else {
       cam.cx = w / 2; cam.cy = h / 2;
+      // Zoom and pan both survive an upgrade. Pan is only nudged if the node
+      // you just moved to would otherwise sit off-canvas (possible when
+      // zoomed well in, where one step is a long way in screen pixels) —
+      // the smallest shift that brings it back inside a margin, so the view
+      // still reads as "where I left it" rather than a re-frame.
+      const s = 260 / cam.dist, M = 80;
+      const p = project(curNode.x, curNode.u);
+      if (p.x < M) cam.x -= (M - p.x) / s;
+      else if (p.x > w - M) cam.x += (p.x - (w - M)) / s;
+      if (p.y < M) cam.u += (M - p.y) / s;
+      else if (p.y > h - M) cam.u -= (p.y - (h - M)) / s;
     }
 
     const svg = $("treeSvg");
