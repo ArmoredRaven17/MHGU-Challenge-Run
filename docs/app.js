@@ -627,6 +627,11 @@
 
   function renderLives() {
     renderNewLifePicker();
+    // Anything that changes which weapon is current, or what it is, comes
+    // through here — upgrading, undoing, switching current, selling, picking
+    // a banked weapon — so the Quests page's Current Weapon panel is kept in
+    // sync from one place rather than each caller remembering.
+    renderCurrentWeapon();
     const wrap = $("livesList"); wrap.innerHTML = "";
     run.lives.forEach((life, idx) => {
       const card = document.createElement("div");
@@ -1188,6 +1193,33 @@
       (run.pendingNewLives > 0
         ? `<div class="rs-row"><span>Banked</span><b>${run.pendingNewLives} to pick</b></div>`
         : "");
+  }
+
+  // ── Current weapon (Quests page, beside Hunter Rank Progress) ──────────
+  // The weapon you're actually hunting with, shown on the Quests page so you
+  // don't have to switch tabs mid-quest to check what you're holding. Uses
+  // the same nodeStatBlockHtml() as the life cards and the tree tooltip, so
+  // there's still one implementation of "how a weapon's stats look".
+  function renderCurrentWeapon() {
+    const wrap = $("currentWeaponPanel");
+    const life = run.lives[run.currentLifeIndex];
+    if (!life || life.status !== "alive") {
+      wrap.innerHTML = `<p class="hint">No weapon in play.` +
+        (run.pendingNewLives > 0 ? ` You have ${run.pendingNewLives} pick${run.pendingNewLives > 1 ? "s" : ""} banked — see Weapon Selection.` : "") +
+        `</p>`;
+      return;
+    }
+    const info = currentNodeInfo(life);
+    const cls = classBySlug[life.classSlug];
+    wrap.innerHTML =
+      `<div class="cw-head">` +
+        `<img class="cw-icon" src="${weaponRarityIcon(life.classSlug, info.stats ? info.stats.r : 0)}" alt="">` +
+        `<div class="cw-id">` +
+          `<div class="cw-name">${escapeHtml(info.levelName)}</div>` +
+          `<div class="cw-sub">${escapeHtml(cls ? cls.label : "")} &middot; ${escapeHtml(info.treeName)} Lv${info.lv}</div>` +
+        `</div>` +
+      `</div>` +
+      (info.stats ? `<div class="cw-stats">${nodeStatBlockHtml(info.stats)}</div>` : "");
   }
 
   // ── Victory ──────────────────────────────────────────────────────────

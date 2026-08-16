@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MHGU Challenge Run</title>
 <link rel="icon" type="image/webp" href="assets/MonsterIcons/MHGU-Question_Mark_Icon.webp">
-<link rel="stylesheet" href="styles.css?v=34">
+<link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body>
 <div id="app">
@@ -70,16 +70,29 @@
       <div id="questsPage">
         <div class="quest-layout">
           <div class="quest-main">
-            <p class="hint reminder">Clear the quest's real main objective &mdash; no subquest
-              shortcuts. No Harvest Tours, no buying craftable shop items (check the
-              &#128269; lookup first).</p>
+            <div class="hint reminder">
+              <p>Clear each Key quest listed below, rank up to earn more Weapons.</p>
+              <p>Quest Failure resulting in selling a weapon, not able to sell a weapon results
+                in failing the run.</p>
+              <p>No Harvest Tours, no completing quest via Subquest objectives, no buying
+                craftable items (aside from Ammo/Coatings)</p>
+            </div>
 
-            <section class="panel" data-open="true">
-              <button class="panel-head">Hunter Rank Progress <span class="panel-state" id="rankState"></span><span class="chev">&#9662;</span></button>
-              <div class="panel-body">
-                <div id="rankPanel"></div>
-              </div>
-            </section>
+            <div class="top-panels">
+              <section class="panel" data-open="true">
+                <button class="panel-head">Hunter Rank Progress <span class="panel-state" id="rankState"></span><span class="chev">&#9662;</span></button>
+                <div class="panel-body">
+                  <div id="rankPanel"></div>
+                </div>
+              </section>
+
+              <section class="panel" data-open="true">
+                <button class="panel-head">Current Weapon<span class="chev">&#9662;</span></button>
+                <div class="panel-body">
+                  <div id="currentWeaponPanel"></div>
+                </div>
+              </section>
+            </div>
 
             <div id="tierList"></div>
           </div>
@@ -266,6 +279,6 @@
 </div>
 
 <script src="data.js?v=19"></script>
-<script src="app.js?v=61"></script>
+<script src="app.js?v=62"></script>
 </body>
 </html>

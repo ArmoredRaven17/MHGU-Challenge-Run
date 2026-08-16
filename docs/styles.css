@@ -415,6 +415,37 @@ body{
 /* ── Key quest checklist ────────────────────────────────────────────── */
 .reminder{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--card);
   margin:0 0 14px}
+/* The reminder holds several separate rules as their own lines now. Inner
+   <p>s would otherwise take the browser's 1em default margin and blow the
+   box open, so spacing is set here instead. */
+.reminder p{margin:0 0 6px}
+.reminder p:last-child{margin-bottom:0}
+/* Hunter Rank Progress and Current Weapon sit side by side above the tier
+   grid. align-items:flex-start so the shorter of the two keeps its natural
+   height instead of stretching to match. Both stay full width once there
+   isn't room for two readable columns. */
+.top-panels{display:flex;gap:8px;align-items:flex-start;margin-bottom:14px}
+.top-panels > .panel{flex:1 1 0;min-width:0}
+@media (max-width:900px){ .top-panels{flex-direction:column} .top-panels > .panel{width:100%} }
+
+/* ── Current Weapon panel ───────────────────────────────────────────── */
+.cw-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.cw-icon{width:34px;height:34px;object-fit:contain;flex-shrink:0}
+.cw-id{min-width:0}
+.cw-name{font-weight:600;font-size:13px;line-height:1.25}
+.cw-sub{font-size:10.5px;opacity:.6;line-height:1.3}
+.cw-stats{border-top:1px solid rgba(255,255,255,.08);padding-top:6px}
+/* Same stat markup as the life cards and tooltip, just scoped smaller here. */
+.cw-stats .stat-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:1px 0}
+.cw-stats .stat-row span{opacity:.6}
+.cw-stats .up{color:var(--good)}
+.cw-stats .dn{color:var(--dead)}
+.cw-stats .stat-sharp{margin-top:5px;display:flex;flex-direction:column;gap:2px}
+.cw-stats .stat-sharp-row{display:flex;align-items:center;gap:6px;font-size:10px}
+.cw-stats .stat-sharp-row span{width:26px;flex-shrink:0;opacity:.6}
+.cw-stats .stat-sharp-bar{flex:1;height:5px;border-radius:3px;overflow:hidden;display:flex;background:#00000030}
+.cw-stats .stat-sharp-seg{height:100%}
+
 /* Rows of narrower panels rather than one full-width column. Grid, not
    flex-wrap — grid's default stretch is exactly what's wanted here: every
    panel sharing a row matches the tallest one in that row, so an opened

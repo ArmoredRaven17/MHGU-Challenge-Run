@@ -525,6 +525,23 @@ reads as "more of the same panel," not a mismatched flat-color gap —
 also claims any extra stretched height when it *is* visible, rather than
 leaving a seam between its own bottom edge and the panel's.
 
+### Current Weapon panel
+
+Sits beside Hunter Rank Progress in `.top-panels` (a flex row that stacks
+below 900px), which is why that panel is no longer full width. Shows the
+weapon actually in play — rarity icon, level name, class + tree + level,
+and full stats via the *same* `nodeStatBlockHtml()` the life cards and the
+tree tooltip use, so there's still one implementation of "how a weapon's
+stats look". The point is not having to leave the Quests page mid-quest to
+check what you're holding.
+
+`renderCurrentWeapon()` is called from `renderLives()` rather than from
+each caller: upgrading, undoing, switching current, selling and spending a
+banked pick all already funnel through there, so the panel can't fall out
+of sync. With no weapon in play it says so, and names the banked-pick count
+if there is one — otherwise a run sitting at 0 alive looks broken rather
+than waiting on you.
+
 ### Quest page progress panel
 
 A right-hand `.quest-progress` column (`#questsPage` becomes a
