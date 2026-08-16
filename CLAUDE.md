@@ -200,6 +200,21 @@ Below the stat tiles it lists the whole weapon roster — "Weapons Standing"
 first, then a faded, struck-through "Fallen" section — each row carrying the
 weapon's quest count.
 
+## Current vs viewed weapon
+
+Two separate indexes. `run.currentLifeIndex` (persisted) is the weapon **in
+play** — it's what quest ticks credit and what the Quests page's Current
+Weapon panel shows. `viewLifeIndex` (module-level, not persisted) is only
+where the tree view is pointed, so you can plan another weapon's upgrade path
+without making it current. Read it through `viewedIndex()`, which falls back
+to the current weapon whenever the viewed one is missing or sold — that's why
+nothing has to clean it up on a sale or a new run.
+
+A rank-up pick **does not** become current; it's added to the rack and the
+tree points at it. The sole exception is having nothing alive in play (the
+pick that rescues a run after the last weapon was sold). Auto-assigning was
+silently moving quest credit onto a fresh root-tier weapon.
+
 ## Quest credit (`life.uses`)
 
 Ticking any quest box — Key Quest, urgent, or Fatalis — increments the

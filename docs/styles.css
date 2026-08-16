@@ -177,13 +177,26 @@ body{
 .lives-list{display:flex;flex-direction:column;gap:6px}
 .life-card{border:1px solid var(--line);border-radius:7px;padding:8px 10px;
   background:var(--card);display:flex;flex-direction:column;gap:4px}
+/* Two different states, so two different signals. "current" is the weapon in
+   play (accent border + In play pill); "viewing" is only where the tree view
+   is pointed, marked by a bar down the left edge. They're usually the same
+   card, but the whole point of the tree's view index is that they needn't be. */
 .life-card.current{border-color:var(--accent-hover);background:#ffffff14}
+/* --accent-hover, not --accent: --accent is the darkened base of the theme
+   colour (rgb(7,19,56) on the default) and disappears into the card. Anything
+   here that has to be *seen* uses the hover shade, the same one .current's
+   border already relies on. */
+.life-card.viewing{box-shadow:inset 3px 0 0 var(--accent-hover)}
+.life-card:not(.sold){cursor:pointer}
+.life-card .lc-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--accent-hover);border:1px solid var(--accent-hover);
+  border-radius:3px;padding:1px 4px;white-space:nowrap}
 /* line-through on the whole card would strike out every stat row too, which
    made a sold weapon's numbers unreadable — the strike belongs on its name
    only, with the card just dimmed. */
 .life-card.sold{opacity:.6}
 .life-card.sold .lc-tree,.life-card.sold .lc-level{text-decoration:line-through}
-.life-card .lc-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.life-card .lc-top{display:flex;align-items:center;gap:6px}
 .life-card .lc-tree{font-weight:600;font-size:12px}
 .life-card .lc-class{font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.04em}
 .life-card .lc-head{display:flex;align-items:center;gap:7px;margin-top:1px}
@@ -215,6 +228,8 @@ body{
 .tree-wrap{margin-top:14px;display:flex;flex-direction:column;gap:6px}
 .tree-toolbar{display:flex;align-items:center;justify-content:space-between}
 .tree-title{font-weight:600;font-size:13px}
+.tree-title-note{font-style:normal;font-weight:400;font-size:10px;text-transform:uppercase;
+  letter-spacing:.05em;opacity:.6;margin-left:6px}
 .tree-body{display:flex;gap:10px;align-items:stretch}
 /* isolation:isolate is load-bearing. renderWeaponTree() assigns each node an
    inline z-index of 1000+i to control paint order among themselves; without

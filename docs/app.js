@@ -652,6 +652,23 @@
     };
   }
 
+  // Which weapon the tree view is pointed at. Deliberately separate from
+  // run.currentLifeIndex: planning an upgrade path is a different act from
+  // deciding what you're hunting with, and tying them together meant you had
+  // to make a weapon current — a real, quest-crediting change — just to look
+  // at where it could go. UI state only, so it isn't persisted; a reload
+  // falls back to the current weapon, which is the right default anyway.
+  let viewLifeIndex = null;
+
+  // Validated on every read rather than cleaned up on sale/new-run: if the
+  // viewed weapon is gone or sold, this silently falls back to the current
+  // one instead of leaving a dangling index for some caller to trip over.
+  function viewedIndex() {
+    const l = viewLifeIndex == null ? null : run.lives[viewLifeIndex];
+    return l && l.status === "alive" ? viewLifeIndex : run.currentLifeIndex;
+  }
+  function viewedLife() { return run.lives[viewedIndex()]; }
+
   function renderLives() {
     renderNewLifePicker();
     // Anything that changes which weapon is current, or what it is, comes
@@ -663,14 +680,17 @@
     run.lives.forEach((life, idx) => {
       const card = document.createElement("div");
       const isCurrent = idx === run.currentLifeIndex && life.status === "alive";
-      card.className = "life-card" + (life.status === "sold" ? " sold" : "") + (isCurrent ? " current" : "");
+      const isViewed = idx === viewedIndex() && life.status === "alive";
+      card.className = "life-card" + (life.status === "sold" ? " sold" : "") +
+        (isCurrent ? " current" : "") + (isViewed ? " viewing" : "");
       const info = currentNodeInfo(life);
       // Only shown under Basic rules — under Advanced every life is the
       // same class as run.class (already shown in the sidebar), so this
       // would just be redundant noise on every card.
       const classTag = run.weaponRulesMode === "basic"
         ? `<span class="lc-class">${escapeHtml((classBySlug[life.classSlug] || {}).label || "?")}</span>` : "";
-      let body = `<div class="lc-top">${classTag}<span class="lc-tree">${escapeHtml(info.treeName)}</span></div>`;
+      let body = `<div class="lc-top">${classTag}<span class="lc-tree">${escapeHtml(info.treeName)}</span>` +
+        (isCurrent ? `<span class="lc-badge">In play</span>` : "") + `</div>`;
       body += `<div class="lc-head">` +
         `<img class="lc-icon" src="${weaponRarityIcon(life.classSlug, info.stats ? info.stats.r : 0)}" alt="">` +
         `<span class="lc-level">${escapeHtml(info.levelName)} <em>Lv${info.lv}</em></span></div>`;
@@ -687,16 +707,31 @@
         body += `<div class="lc-sold">Sold</div>`;
       }
       card.innerHTML = body;
+      // Clicking anywhere on an alive card points the tree at that weapon.
+      // The buttons inside stop propagation, so "Set current" and "Log
+      // failure" still mean only themselves.
+      if (life.status === "alive") {
+        card.addEventListener("click", () => {
+          viewLifeIndex = idx;
+          renderLives();
+        });
+      }
       wrap.appendChild(card);
     });
     wrap.querySelectorAll("[data-set-current]").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         run.currentLifeIndex = parseInt(btn.dataset.setCurrent, 10);
-        save(); renderLives(); renderWeaponTree();
+        // Making a weapon current is also a statement about which one you
+        // care about right now, so bring the tree along rather than leaving
+        // it parked on whatever was being browsed.
+        viewLifeIndex = run.currentLifeIndex;
+        save(); renderLives();
       });
     });
     wrap.querySelectorAll("[data-fail]").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const idx = parseInt(btn.dataset.fail, 10);
         const info = currentNodeInfo(run.lives[idx]);
         confirmAction("Log a failure?",
@@ -876,7 +911,7 @@
 
   function renderWeaponTree() {
     const treeWrap = $("treeWrap");
-    const life = run.lives[run.currentLifeIndex];
+    const life = viewedLife();
     if (!life || life.status !== "alive") { treeWrap.classList.add("hidden"); return; }
     treeWrap.classList.remove("hidden");
 
@@ -887,7 +922,11 @@
     nodesForCurrentGraph = nodes;
 
     const info = currentNodeInfo(life);
-    $("treeTitle").textContent = `${info.treeName} — ${info.levelName} (Lv ${info.lv})`;
+    // Say plainly whose tree this is. Once the tree can show a weapon that
+    // isn't the one in play, an unlabelled title is a trap — you'd upgrade
+    // what you thought was your active weapon.
+    $("treeTitle").innerHTML = escapeHtml(`${info.treeName} — ${info.levelName} (Lv ${info.lv})`) +
+      (viewedIndex() === run.currentLifeIndex ? "" : ` <em class="tree-title-note">not in play</em>`);
 
     const canvas = $("treeCanvas");
     const w = canvas.clientWidth || 600, h = canvas.clientHeight || 400;
@@ -1130,7 +1169,7 @@
     box.innerHTML = html;
     box.querySelectorAll(".choice-card").forEach(el => {
       const n = nodesForCurrentGraph.get(el.dataset.k);
-      el.addEventListener("click", () => advanceLife(run.lives[run.currentLifeIndex], el.dataset.k));
+      el.addEventListener("click", () => advanceLife(viewedLife(), el.dataset.k));
       el.addEventListener("mouseenter", () => showStatTip(el, n));
       el.addEventListener("mouseleave", hideStatTip);
     });
@@ -1145,7 +1184,7 @@
   // touch anything with real run stakes (those are quest failures, not
   // which tree node is recorded), and re-advancing costs nothing either.
   function undoLife() {
-    const life = run.lives[run.currentLifeIndex];
+    const life = viewedLife();
     if (!life) return;
     const node = nodesForCurrentGraph.get(life.currentKey);
     if (!node || !node.parent) return;
@@ -1531,7 +1570,18 @@
       row.innerHTML = `<span>${escapeHtml(t.n)}</span><span class="tr-rarity">Rarity ${t.r}</span>`;
       row.addEventListener("click", () => {
         run.lives.push(newLife(c.slug, t.i, t.levels[0][0]));
-        run.currentLifeIndex = run.lives.length - 1;
+        const idx = run.lives.length - 1;
+        // A new weapon joins the rack; it does NOT take over as the one in
+        // play. Auto-assigning silently moved quest credit onto a fresh
+        // root-tier weapon the player hadn't chosen to hunt with. The one
+        // exception is having nothing in play at all (the pick that rescues
+        // a run after the last weapon was sold) — there, leaving no current
+        // weapon would just be a dead end.
+        const cur = run.lives[run.currentLifeIndex];
+        if (!cur || cur.status !== "alive") run.currentLifeIndex = idx;
+        // Point the tree at it either way: you picked it, you probably want
+        // to see where it goes.
+        viewLifeIndex = idx;
         // Decrement, don't clear — a second rank-up may have come in before
         // this pick, in which case one is still owed and the picker should
         // stay open rather than acting like the debt is fully paid.
@@ -1709,8 +1759,8 @@
     const won = run.endReason === "victory";
     $("resultBody").innerHTML = `
       <h2${won ? ' class="result-victory"' : ""}>${won ? "Victory" : "Run Over"}</h2>
-      <p class="hint">${classBySlug[run.class] ? escapeHtml(classBySlug[run.class].label) : ""}${won ? "" :
-        " — " + (run.endReason === "no-lives" ? "no weapons remaining" : "ended")}</p>`
+      ${won ? "" : `<p class="hint">${classBySlug[run.class] ? escapeHtml(classBySlug[run.class].label) : ""} —
+        ${run.endReason === "no-lives" ? "no weapons remaining" : "ended"}</p>`}`
       + (won ? victoryFlavorHtml() : "") + `
       <div class="sum-stats">
         <div class="sum-stat"><b>${run.hr}</b><span>Hunter Rank</span></div>
