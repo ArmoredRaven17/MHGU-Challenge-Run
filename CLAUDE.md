@@ -52,11 +52,20 @@ z-indexes contained inside the canvas. **Don't give `.tree-canvas` a
 as "tree elements render on top of modals," which looks like a modal bug
 rather than a stacking-context one.
 
-**Two content pages, one persistent sidebar.** `#questsPage` (Hunter Rank
-Progress panel + Key Quest checklist) and `#weaponsPage` (weapon lives) are
-separate divs toggled by `activeTab` in `app.js` — see `renderTabs()`. The
+**Three content pages, one persistent sidebar.** `#questsPage` (Hunter Rank
+Progress panel + Key Quest checklist), `#weaponsPage` (the weapons you
+currently hold — lives list + tree view) and `#selectPage` (the new-life
+picker) are separate divs toggled by `activeTab` in `app.js` — see
+`renderTabs()`. **Picking and holding are deliberately separate pages**:
+Weapons is the read-only view of what you have, Weapon Selection is where
+banked picks get spent. The pending-picks badge therefore lives on the
+Weapon Selection tab, not Weapons — it points at the page that can act on
+it. Since the picker is that page's only content, `renderNewLifePicker()`
+also toggles `#noPicksNote`, so an empty selection page explains itself
+rather than showing a blank screen. The
 sidebar (`#runStatus`: starting class, weapon rules, quest rules, HR, lives
-alive/total, plus the End Run button) stays visible across both tabs. There
+alive/total, banked picks, plus the End Run button) stays visible across
+all three tabs. There
 is deliberately no HR stepper — see "Hunter Rank Progress" below. There is
 no *standalone* Victory panel — an early version (always-visible Ahtal-Ka +
 3 Fatalis checkboxes) did nothing useful and was removed. The Fatalis

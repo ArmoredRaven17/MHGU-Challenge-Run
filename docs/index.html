@@ -64,6 +64,7 @@
       <div class="page-tabs">
         <button id="tabQuests" class="page-tab" type="button">Quests</button>
         <button id="tabWeapons" class="page-tab" type="button">Weapons</button>
+        <button id="tabSelect" class="page-tab" type="button">Weapon Selection</button>
       </div>
 
       <div id="questsPage">
@@ -89,7 +90,7 @@
         </div>
       </div>
 
-      <div id="weaponsPage" class="hidden">
+      <div id="selectPage" class="hidden">
         <div id="newLifePicker" class="new-life-picker hidden">
           <p class="hint" id="newLifePickerHint">Hunter Rank up! Pick your new weapon &mdash; any tree
             for your class you've reached the Hunter Rank for, starting at its base.</p>
@@ -101,6 +102,11 @@
           <div id="lifeTreeResults" class="tree-results"></div>
           <p class="hint tree-caveat">*Some weapons are selectable but may not be crafted right away</p>
         </div>
+        <p id="noPicksNote" class="hint reminder hidden">No weapon picks waiting. You'll earn one
+          each time your Hunter Rank goes up &mdash; they keep until you spend them.</p>
+      </div>
+
+      <div id="weaponsPage" class="hidden">
         <div class="weapons-layout">
         <aside class="weapons-panel">
           <div class="wp-title">Weapons</div>
@@ -260,6 +266,6 @@
 </div>
 
 <script src="data.js?v=19"></script>
-<script src="app.js?v=60"></script>
+<script src="app.js?v=61"></script>
 </body>
 </html>

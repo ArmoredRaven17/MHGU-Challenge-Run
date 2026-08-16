@@ -1366,6 +1366,10 @@
     const picker = $("newLifePicker");
     const pending = run.pendingNewLives || 0;
     picker.classList.toggle("hidden", pending <= 0);
+    // The picker is the whole Weapon Selection page, so when there's nothing
+    // to spend the page would otherwise be blank — say why rather than
+    // showing an empty screen.
+    $("noPicksNote").classList.toggle("hidden", pending > 0);
     if (pending <= 0) return;
     const basic = run.weaponRulesMode === "basic";
     // Lead with the count — picks bank, so someone arriving here may be owed
@@ -1576,13 +1580,17 @@
   function renderTabs() {
     $("tabQuests").classList.toggle("on", activeTab === "quests");
     $("tabWeapons").classList.toggle("on", activeTab === "weapons");
-    // A rank-up no longer jumps to the Weapons page, so the tab itself has to
-    // carry the news — otherwise banked picks are invisible from Quests.
+    $("tabSelect").classList.toggle("on", activeTab === "select");
+    // A rank-up doesn't jump anywhere, so the tab has to carry the news —
+    // otherwise banked picks are invisible from the other pages. The badge
+    // lives on Weapon Selection because that's where you go to spend them;
+    // Weapons is just the read-only view of what you already hold.
     const pending = run.pendingNewLives || 0;
-    $("tabWeapons").innerHTML = "Weapons" +
+    $("tabSelect").innerHTML = "Weapon Selection" +
       (pending > 0 ? ` <span class="tab-badge">${pending}</span>` : "");
     $("questsPage").classList.toggle("hidden", activeTab !== "quests");
     $("weaponsPage").classList.toggle("hidden", activeTab !== "weapons");
+    $("selectPage").classList.toggle("hidden", activeTab !== "select");
     // Re-render the tree once the page is actually visible. A hidden
     // #weaponsPage means the canvas has clientWidth/Height of 0, so
     // renderWeaponTree() falls back to 600x400 and builds a camera framed
@@ -1593,6 +1601,7 @@
   }
   $("tabQuests").addEventListener("click", () => { activeTab = "quests"; renderTabs(); });
   $("tabWeapons").addEventListener("click", () => { activeTab = "weapons"; renderTabs(); });
+  $("tabSelect").addEventListener("click", () => { activeTab = "select"; renderTabs(); });
 
   // ── Result screen ─────────────────────────────────────────────────────
   // Deliberately minimal — a fuller result screen, closer to the Zenny
