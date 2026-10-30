@@ -110,11 +110,11 @@ own theme, including its hand-tuned hex values (same author).
 
 ---
 
-## Development — AI assistance
+## AI Use
 
-A large share of this project's source code was written with
-**[Claude Code](https://claude.com/claude-code)** (Anthropic), directed and
-reviewed by the author.
+Anthropic's **[Claude Code](https://claude.com/claude-code)** was used for
+decoding the ROMs, extracting assets, code generation and code assistance.
+**However, this app was manually reviewed, tested, validated and revised by me.**
 
 This is disclosed for transparency rather than to satisfy a licence term.
 The project's code remains MIT-licensed (see [LICENSE](LICENSE)).
